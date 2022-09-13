@@ -61,41 +61,42 @@ public:
   bool dfHandle;                          // whether df is handle or not
   bool ddfHandle;                         // whether ddf is handle or not
   const Type inf = options.max_coord + 1; // helper for barrier handling
+  int dimension;
   /*Constructors for different input instances*/
-  crhmc_input(int dimension, func &function, grad &g, hess &h)
+  crhmc_input(int dim, func &function, grad &g, hess &h)
       : f(function), df(g), ddf(h)
-  {
+  { dimension = dim;
     fZero = false;
     fHandle = true;
     dfHandle = true;
     ddfHandle = true;
-    init(dimension);
+    init(dim);
   }
-  crhmc_input(int dimension, func &function)
+  crhmc_input(int dim, func &function)
       : f(function), df(zerof), ddf(zerof)
-  {
+  { dimension = dim;
     fZero = false;
     fHandle = true;
     dfHandle = false;
     ddfHandle = false;
-    init(dimension);
+    init(dim);
   }
-  crhmc_input(int dimension, func &function, grad &g)
+  crhmc_input(int dim, func &function, grad &g)
       : f(function), df(g), ddf(zerof)
-  {
+  { dimension = dim;
     fZero = false;
     fHandle = true;
     dfHandle = true;
     ddfHandle = false;
-    init(dimension);
+    init(dim);
   }
-  crhmc_input(int dimension) : f(zerosf), df(zerof), ddf(zerof)
-  {
+  crhmc_input(int dim) : f(zerosf), df(zerof), ddf(zerof)
+  { dimension = dim;
     fZero = true;
     fHandle = false;
     dfHandle = false;
     ddfHandle = false;
-    init(dimension);
+    init(dim);
   }
 
   void init(int dimension)

@@ -39,10 +39,10 @@ public:
   std::vector<int> freeIdx;
   VT center;
   const NT max_step = 1e16; // largest step size
-  VT extraHessian;  //Regularization factor
+  MT extraHessian;
 
   const NT inf = std::numeric_limits<NT>::infinity();
-  //initialization function
+
   void set_bound(VT const &_lb, VT const &_ub) {
 
     lb = _lb;
@@ -76,26 +76,34 @@ public:
   TwoSidedBarrier(VT const &_lb, VT const &_ub, int _vdim = 1) {
     set_bound(_lb, _ub);
     vdim = _vdim;
-    extraHessian = (1e-20) * VT::Ones(n);
+    extraHessian = (1e-20) * MT::Ones(n,1);
   }
   TwoSidedBarrier() { vdim = 1; }
-  //barrier function gradient
+
   VT gradient(VT const &x) {
     return (ub - x).cwiseInverse() - (x - lb).cwiseInverse();
   }
-  //Return the barrier hessian with the extra Regularization
+
   VT hessian(VT const &x) {
     VT d = ((ub - x).cwiseProduct((ub - x))).cwiseInverse() +
            ((x - lb).cwiseProduct((x - lb))).cwiseInverse();
     return d + extraHessian;
   }
-  //third derivative of the barrier
-  VT tensor(VT const &x) {
-    VT d = 2 * (((ub - x).cwiseProduct((ub - x))).cwiseProduct((ub - x)))
+  MT hessian(MT const &x){
+    MT d = (((- x).colwise()+ub).cwiseProduct(((- x).colwise()+ub))).cwiseInverse() +
+           ((x.colwise() - lb).cwiseProduct((x.colwise() - lb))).cwiseInverse();
+    return d + extraHessian;
+  }
+  MT tensor(MT const &x) {
+    MT d = 2 * ((((-x).colwise()+ub).cwiseProduct(((-x).colwise()+ub))).cwiseProduct(((-x).colwise()+ub)))
                    .cwiseInverse() -
-           2 * (((x - lb).cwiseProduct((x - lb))).cwiseProduct((x - lb)))
+           2 * (((x.colwise() - lb).cwiseProduct(( x.colwise() - lb))).cwiseProduct(( x.colwise() - lb)))
                    .cwiseInverse();
     return d;
+  }
+  MT quadratic_form_gradient(MT const &x, MT const &u) {
+    // Output the -grad of u' (hess phi(x)) u.
+    return (u.cwiseProduct(u)).cwiseProduct(tensor(x));
   }
   VT quadratic_form_gradient(VT const &x, VT const &u) {
     // Output the -grad of u' (hess phi(x)) u.
@@ -124,6 +132,13 @@ public:
 
   bool feasible(VT const &x) {
     return (x.array() > lb.array() && x.array() < ub.array()).all();
+  }
+  VT feasible(MT const &x) {
+    VT result=VT::Ones(x.cols());
+    for(int i=0;i<x.cols();i++){
+      result(i)=(x.col(i).array() > lb.array() && x.col(i).array() < ub.array()).all();
+    }
+    return result;
   }
 
   std::pair<VT, VT> analytic_center_oracle(VT const &x) {

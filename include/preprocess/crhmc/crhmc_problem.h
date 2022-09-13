@@ -97,6 +97,7 @@ public:
   const NT inf = options.max_coord + 1; // helper for barrier handling
   int equations() const { return Asp.rows(); }
   int dimension() const { return Asp.cols(); }
+  int nnz() const { return Asp.nonZeros(); }
 
   // Remove varibles that have width under some tolerance
   int remove_fixed_variables(const NT tol = 1e-12) {
@@ -564,77 +565,88 @@ public:
                    "point.\n";
       exit(1);
     }
-#ifdef TIME_KEEPING
-    std::cerr << "Rescale completed in time, ";
-    std::cerr << rescale_duration.count() << " secs " << std::endl;
-    std::cerr << "Split dense columns completed in time, ";
-    std::cerr << sparsify_duration.count() << " secs " << std::endl;
-    std::cerr << "Reordering completed in time, ";
-    std::cerr << reordering_duration.count() << " secs " << std::endl;
-    std::cerr << "Removing dependent rows completed in time, ";
-    std::cerr << rm_rows_duration.count() << " secs " << std::endl;
-    std::cerr << "Removing fixed variables completed in time, ";
-    std::cerr << rm_fixed_vars_duration.count() << " secs " << std::endl;
-    std::cerr << "Extracting collapsed variables completed in time, ";
-    std::cerr << ex_collapsed_vars_duration.count() << " secs " << std::endl;
-    std::cerr << "Shift_barrier completed in time, ";
-    std::cerr << shift_barrier_duration.count() << " secs " << std::endl;
-    std::cerr << "Finding Center completed in time, ";
-    std::cerr << lewis_center_duration.count() << " secs " << std::endl;
-#endif
   }
-
+#ifdef TIME_KEEPING
+template <typename StreamType>
+void print_preparation_time(StreamType& stream){
+  stream << "---Preparation Timing Information"<< std::endl;
+  stream << "Rescale completed in time, ";
+  stream << rescale_duration.count() << " secs " << std::endl;
+  stream << "Split dense columns completed in time, ";
+  stream << sparsify_duration.count() << " secs " << std::endl;
+  stream << "Reordering completed in time, ";
+  stream << reordering_duration.count() << " secs " << std::endl;
+  stream << "Removing dependent rows completed in time, ";
+  stream << rm_rows_duration.count() << " secs " << std::endl;
+  stream << "Removing fixed variables completed in time, ";
+  stream << rm_fixed_vars_duration.count() << " secs " << std::endl;
+  stream << "Extracting collapsed variables completed in time, ";
+  stream << ex_collapsed_vars_duration.count() << " secs " << std::endl;
+  stream << "Shift_barrier completed in time, ";
+  stream << shift_barrier_duration.count() << " secs " << std::endl;
+  stream << "Finding Center completed in time, ";
+  stream << lewis_center_duration.count() << " secs " << std::endl;
+}
+#endif
   // Gradient and hessian of for the analytic center
   std::pair<VT, VT> analytic_center_oracle(VT const &x) {
-    VT g, h;
+    MT g, h;
     std::tie(std::ignore, g, h) = f_oracle(x);
     return std::make_pair(g + barrier.gradient(x), h + barrier.hessian(x));
   }
   // Gradient and hessian of for the lewis center
   std::pair<VT, VT> lewis_center_oracle(VT const &x, VT const &w) {
-    VT g, h;
+    MT g, h;
     std::tie(std::ignore, g, h) = f_oracle(x);
     return std::make_pair(g + w.cwiseProduct(barrier.gradient(x)),
                           h + w.cwiseProduct(barrier.hessian(x)));
   }
   // Function that uses the transformation (T,y) to apply the function to the
   // original variables
-  std::tuple<NT, VT, VT> f_oracle(VT x) {
-    NT f;
-    VT g, h;
+  std::tuple<VT, MT, MT> f_oracle(MT const &x) {
     int n = x.rows();
+    int m=x.cols();
+    VT f=VT(m);
+    MT g=MT(n,m);
+    MT h=MT(n,m);
     if (fZero) {
-      f = 0;
-      g = VT::Zero(n);
-      h = VT::Zero(n);
+      f = VT::Zero(m);
+      g = MT::Zero(n,m);
+      h = MT::Zero(n,m);
       return std::make_tuple(f, g, h);
     }
     // Take the correpsonding point in the original space
-    VT z = VT::Zero(n);
+    MT z = MT::Zero(n,m);
     if (fHandle || dfHandle || ddfHandle) {
       z(Tidx, Eigen::all) = Ta.cwiseProduct(x(Tidx, Eigen::all)) + y;
     }
 
     // If the function is given evaluate it at the original point
     if (fHandle) {
-      f = func(Point(z));
+      for(int k=0;k<m;k++){
+        f(k) = func(Point(z(Eigen::all,k)));
+      }
     } else {
-      f = 0;
+      f = VT::Zero(m);
     }
     // If the gradient is given evaluate it at the original point
     if (dfHandle) {
-      g = VT::Zero(n, 1);
-      g(Tidx, Eigen::all) = Ta.cwiseProduct(df(Point(z)).getCoefficients());
+      g = MT::Zero(n, m);
+      for(int k=0;k<m;k++){
+        g(Tidx, k) += Ta.cwiseProduct(df(Point(z(Eigen::all,k))).getCoefficients());
+      }
     } else {
-      g = VT::Zero(n, 1);
+      g = MT::Zero(n, m);
     }
     // If the hessian is given evaluate it at the original point
     if (ddfHandle) {
-      h = VT::Zero(n, 1);
-      h(Tidx, Eigen::all) =
-          (Ta.cwiseProduct(Ta)).cwiseProduct(ddf(Point(z)).getCoefficients());
+      h = MT::Zero(n, m);
+      for(int k=0;k<m;k++){
+        h(Tidx, k) +=
+        (Ta.cwiseProduct(Ta)).cwiseProduct(ddf(Point(z(Eigen::all,k))).getCoefficients());
+      }
     } else {
-      h = VT::Zero(n, 1);
+      h = MT::Zero(n,m);
     }
     return std::make_tuple(f, -g, h);
   }
