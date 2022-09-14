@@ -58,7 +58,6 @@ public:
       {
         int num_batches = chains.cols() / s.simdLen;
         int k = std::ceil(options.nRemoveInitialSamples * (num_batches / min_eff_samples));
-        std::cerr << k << "\n";
         s.num_runs = std::ceil(s.num_runs * (1 - k / num_batches));
         s.acceptedStep = s.acceptedStep * (1 - k / num_batches);
         int q = chains.cols() - (k - 1) * s.simdLen;

@@ -42,10 +42,18 @@ void sample_gaussian(HPOLYTOPE HP, int numpoints = 1000, int nburns = 0) {
   MT randPoints;
   RNGType rng(1);
   unsigned int walkL = 1;
-
+  #ifdef TIME_KEEPING
+    std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
+    start = std::chrono::system_clock::now();
+  #endif
   crhmc_sampling<MT, CrhmcProblem, RNGType, CRHMCWalk, NT, Point, Input, Solver,
                  Opts>(randPoints, P, rng, walkL, numpoints, Point(P.center),
                        nburns, input, options);
+  #ifdef TIME_KEEPING
+    end = std::chrono::system_clock::now();
+    std::chrono::duration<double> total_time = end - start;
+    std::cerr << "Total time: " << total_time.count() << "\n";
+  #endif
   std::cout << randPoints.transpose();
   std::cerr << "PSRF: " << multivariate_psrf<NT, VT, MT>(randPoints)
             << std::endl;
