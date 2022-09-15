@@ -36,7 +36,6 @@ public:
   MT &chains;
   bool terminate = false;
   int N;
-  int iba = 0;
   int dimension;
   mixing_time_estimation_sampler(Walk &s, int num_samples, MT &randPoints, int dim)
       : options(s.params.options), chains(randPoints)
@@ -50,7 +49,6 @@ public:
   {
     if (s.nEffectiveStep.mean() > nextEstimateStep)
     {
-      iba++;
       unsigned int min_eff_samples = 1;
       effective_sample_size<NT, VT, MT>(chains, min_eff_samples);
       if (removedInitial == false &&
@@ -70,6 +68,7 @@ public:
       NT mixingTime = num_batches / min_eff_samples;
       sampling_rate = s.simdLen / mixingTime;
       est_num_samples = s.num_runs * sampling_rate;
+      estimation_update(s);
     }
   }
   void estimation_update(Walk &s)
@@ -178,5 +177,78 @@ void crhmc_sampling(PointList &randPoints,
     }
 
   r.apply(crhmc_walk, rng);
+}
+#include <omp.h>
+template <
+    typename PointList,
+    typename Polytope,
+    typename RandomNumberGenerator,
+    typename WalkTypePolicy,
+    typename NT,
+    typename Point,
+    typename Input,
+    typename Solver,
+    typename Opts>
+void parallel_crhmc_sampling(PointList &randPoints,
+                    Polytope &P,
+                    RandomNumberGenerator &rng,
+                    const unsigned int &walk_len,
+                    const unsigned int &rnum,
+                    const Point &starting_point,
+                    unsigned int const &nburns,
+                    Input &input,
+                    Opts &options,
+                    unsigned int const& num_threads)
+{
+  using NegativeGradientFunctor = typename Input::Grad;
+  using NegativeLogprobFunctor = typename Input::Func;
+  typedef typename WalkTypePolicy::template Walk<
+      Point,
+      Polytope,
+      RandomNumberGenerator,
+      NegativeGradientFunctor,
+      NegativeLogprobFunctor,
+      Solver>
+      walk;
+
+  typedef typename WalkTypePolicy::template parameters<
+      NT,
+      NegativeGradientFunctor>
+      walk_params;
+  omp_set_num_threads(num_threads);
+
+  // Initialize random walk parameters
+  unsigned int dim = starting_point.dimension();
+
+  Point p = starting_point;
+
+  typedef mixing_time_estimation_sampler<walk> RandomPointGenerator;
+  std::vector<RandomPointGenerator> r[num_threads];
+  std::vector<PointList> poits[num_threads];
+  std::vector<walk> crhmc_walk[num_threads];
+
+  #pragma omp parallel
+  {
+    int thread_index = omp_get_thread_num();
+    walk_params params(input.df, dim, options);
+    if (input.df.params.eta > 0)
+    {
+      params.eta = input.df.params.eta;
+    }
+    crhmc_walk[thread_index]= walk(P, p, input.df, input.f, params);
+    r[thread_index]=RandomPointGenerator(crhmc_walk[thread_index], rnum, points[thread_index], input.dimension);
+  if(nburns > 0)
+    {
+      r[thread_index].apply(crhmc_walk[thread_index], rng, nburns);
+      r[thread_index].clear();
+    }
+
+  r[thread_index].apply(crhmc_walk[thread_index], rng);
+  }
+  for(unsigned int i=0;i<num_threads;i++){
+    randPoints.conservativeResize(input.dimension,randPoints.cols()+points[i].cols());
+    randPoints.rightCols(points[i].cols())=points[i];
+    points[i].resize(0,0);
+  }
 }
 #endif
