@@ -131,7 +131,6 @@ public:
   }
   //Broadcast terminate, sampling_rate, est_num_samples
   void sync(){
-    int thread_index = omp_get_thread_num();
     global_sampling_rate=0;
     global_est_num_samples=0;
     #pragma omp barrier

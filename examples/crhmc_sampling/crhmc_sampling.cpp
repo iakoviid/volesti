@@ -16,6 +16,7 @@
 #include "Eigen/Eigen"
 #include "cartesian_geom/cartesian_kernel.h"
 #include "diagnostics/multivariate_psrf.hpp"
+#include "diagnostics/effective_sample_size.hpp"
 #include "generators/known_polytope_generators.h"
 #include "misc/misc.h"
 #include "ode_solvers/ode_solvers.hpp"
@@ -114,6 +115,9 @@ void run_main(int n_samples = 10000, int n_burns = -1, int dimension = 2,
   std::cerr << "Average Acceptance Probability: "
             << crhmc.average_acceptance_prob << std::endl;
   std::cerr << "PSRF: " << multivariate_psrf<NT, VT, MT>(samples) << std::endl;
+  unsigned int min_eff_samples=0;
+  effective_sample_size<NT, VT, MT>(samples, min_eff_samples);
+  std::cerr<<"Min ess: "<<min_eff_samples << std::endl;
   std::cerr << "Writing samples in a file \n";
 #ifdef TIME_KEEPING
   start = std::chrono::system_clock::now();
