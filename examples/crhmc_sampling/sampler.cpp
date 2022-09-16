@@ -26,7 +26,7 @@ using func_params = GaussianFunctor::parameters<NT, Point>;
 using Input = crhmc_input<MT, Point, Func, Grad, Hess>;
 using CrhmcProblem = crhmc_problem<Point, Input>;
 using Solver = ImplicitMidpointODESolver<Point, NT, CrhmcProblem, Grad>;
-void sample_gaussian(HPOLYTOPE HP, int numpoints = 1000, int nburns = 0) {
+void sample_gaussian(HPOLYTOPE HP, int numpoints = 1000, int nburns = 0, int num_threads=1) {
   int dimension = HP.dimension();
   NT variance = 1.0;
   func_params params = func_params(Point(dimension), variance, 1);
@@ -46,9 +46,9 @@ void sample_gaussian(HPOLYTOPE HP, int numpoints = 1000, int nburns = 0) {
     std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
     start = std::chrono::system_clock::now();
   #endif
-  crhmc_sampling<MT, CrhmcProblem, RNGType, CRHMCWalk, NT, Point, Input, Solver,
+  parallel_crhmc_sampling<MT, CrhmcProblem, RNGType, CRHMCWalk, NT, Point, Input, Solver,
                  Opts>(randPoints, P, rng, walkL, numpoints, Point(P.center),
-                       nburns, input, options);
+                       nburns, input, options, num_threads);
   #ifdef TIME_KEEPING
     end = std::chrono::system_clock::now();
     std::chrono::duration<double> total_time = end - start;
@@ -74,10 +74,10 @@ HPOLYTOPE visualization_example() {
 
 int main(int argc, char *argv[]) {
   HPOLYTOPE HP = visualization_example();
-  if (argc == 3) {
-    sample_gaussian(HP, atoi(argv[1]), atoi(argv[2]));
+  if (argc == 4) {
+    sample_gaussian(HP, atoi(argv[1]), atoi(argv[2]),atoi(argv[3]));
   } else {
-    std::cerr << "Example Usage: ./sampler [n_samples] [initial_burns] "
+    std::cerr << "Example Usage: ./sampler [n_samples] [initial_burns] [num_threads]"
               <<  "\n";
   }
   return 0;

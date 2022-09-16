@@ -52,7 +52,7 @@ public:
   Type initialStepEst=20;
   Type step_multiplier=2;
   int nRemoveInitialSamples = 10; // the number of samples we remove from the start
-
+  int num_threads=1;
   opts() {}
   void operator=(const opts &rhs) {
     EnableReordering = rhs.EnableReordering;

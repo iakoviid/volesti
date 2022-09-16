@@ -16,6 +16,10 @@
 #ifndef MIXING_TIME_ESTIMATION_SAMPLER_HPP
 #define MIXING_TIME_ESTIMATION_SAMPLER_HPP
 #include "diagnostics/effective_sample_size.hpp"
+#include <omp.h>
+double global_sampling_rate=0;
+double global_est_num_samples=0;
+bool global_terminate=false;
 template <typename Walk>
 class mixing_time_estimation_sampler
 {
@@ -51,6 +55,7 @@ public:
     {
       unsigned int min_eff_samples = 1;
       effective_sample_size<NT, VT, MT>(chains, min_eff_samples);
+      std::cerr<<min_eff_samples<<"\n";
       if (removedInitial == false &&
           min_eff_samples > 2 * options.nRemoveInitialSamples)
       {
@@ -97,6 +102,9 @@ public:
     {
       s.apply(rng);
       estimation_step(s);
+      if(options.num_threads > 1){
+        sync();
+      }
       MT sample = s.getPoints();
       chains.conservativeResize(dimension, chains.cols() + s.simdLen);
       chains.rightCols(s.simdLen) = sample;
@@ -104,6 +112,7 @@ public:
   }
   void clear(){
     chains.resize(dimension,0);
+    nextEstimateStep = options.initialStepEst;
   }
   template <typename RNGType>
   void apply(Walk &s, RNGType &rng, int N)
@@ -112,10 +121,30 @@ public:
     {
       s.apply(rng);
       estimation_step(s);
+      if(options.num_threads > 1){
+        sync();
+      }
       MT sample = s.getPoints();
       chains.conservativeResize(dimension, chains.cols() + s.simdLen);
       chains.rightCols(s.simdLen) = sample;
     }
+  }
+  //Broadcast terminate, sampling_rate, est_num_samples
+  void sync(){
+    int thread_index = omp_get_thread_num();
+    global_sampling_rate=0;
+    global_est_num_samples=0;
+    #pragma omp barrier
+    #pragma omp critical
+    {
+        global_sampling_rate+=sampling_rate;
+        global_est_num_samples+=est_num_samples;
+        global_terminate= global_terminate || terminate;
+    }
+    #pragma omp barrier
+    sampling_rate_outside=global_sampling_rate-sampling_rate;
+    est_num_samples_outside=global_est_num_samples-est_num_samples;
+    terminate=global_terminate;
   }
 };
 
@@ -178,7 +207,6 @@ void crhmc_sampling(PointList &randPoints,
 
   r.apply(crhmc_walk, rng);
 }
-#include <omp.h>
 template <
     typename PointList,
     typename Polytope,
@@ -200,6 +228,7 @@ void parallel_crhmc_sampling(PointList &randPoints,
                     Opts &options,
                     unsigned int const& num_threads)
 {
+  std::cerr<<"Number of threads "<<num_threads<<"\n";
   using NegativeGradientFunctor = typename Input::Grad;
   using NegativeLogprobFunctor = typename Input::Func;
   typedef typename WalkTypePolicy::template Walk<
@@ -216,17 +245,14 @@ void parallel_crhmc_sampling(PointList &randPoints,
       NegativeGradientFunctor>
       walk_params;
   omp_set_num_threads(num_threads);
-
+  options.num_threads=num_threads;
   // Initialize random walk parameters
   unsigned int dim = starting_point.dimension();
 
   Point p = starting_point;
 
   typedef mixing_time_estimation_sampler<walk> RandomPointGenerator;
-  std::vector<RandomPointGenerator> r[num_threads];
-  std::vector<PointList> poits[num_threads];
-  std::vector<walk> crhmc_walk[num_threads];
-
+  std::vector<PointList> points(num_threads);
   #pragma omp parallel
   {
     int thread_index = omp_get_thread_num();
@@ -235,15 +261,15 @@ void parallel_crhmc_sampling(PointList &randPoints,
     {
       params.eta = input.df.params.eta;
     }
-    crhmc_walk[thread_index]= walk(P, p, input.df, input.f, params);
-    r[thread_index]=RandomPointGenerator(crhmc_walk[thread_index], rnum, points[thread_index], input.dimension);
+    walk crhmc_walk= walk(P, p, input.df, input.f, params);
+    RandomPointGenerator r=RandomPointGenerator(crhmc_walk, rnum, points[thread_index], input.dimension);
   if(nburns > 0)
     {
-      r[thread_index].apply(crhmc_walk[thread_index], rng, nburns);
-      r[thread_index].clear();
+      r.apply(crhmc_walk, rng, nburns);
+      r.clear();
     }
 
-  r[thread_index].apply(crhmc_walk[thread_index], rng);
+  r.apply(crhmc_walk, rng);
   }
   for(unsigned int i=0;i<num_threads;i++){
     randPoints.conservativeResize(input.dimension,randPoints.cols()+points[i].cols());

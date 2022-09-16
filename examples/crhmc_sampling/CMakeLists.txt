@@ -120,10 +120,11 @@ else ()
   add_definitions(${CXX_COVERAGE_COMPILE_FLAGS} "-lm")
   add_definitions(${CXX_COVERAGE_COMPILE_FLAGS} "-ldl")
   add_definitions(${CXX_COVERAGE_COMPILE_FLAGS} "-DBOOST_NO_AUTO_PTR")
+	find_package(OpenMP REQUIRED)
 
   add_executable (crhmc_sampling crhmc_sampling.cpp)
 	add_executable (sampler sampler.cpp)
 	TARGET_LINK_LIBRARIES(crhmc_sampling ${QD_LIB} ${MKL_LINK} ${LP_SOLVE})
-	TARGET_LINK_LIBRARIES(sampler ${QD_LIB} ${MKL_LINK} ${LP_SOLVE})
+	TARGET_LINK_LIBRARIES(sampler ${QD_LIB} ${MKL_LINK} ${LP_SOLVE} OpenMP::OpenMP_CXX)
 
 endif()
