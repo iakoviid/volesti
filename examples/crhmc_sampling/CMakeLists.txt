@@ -127,4 +127,7 @@ else ()
 	TARGET_LINK_LIBRARIES(crhmc_sampling ${QD_LIB} ${MKL_LINK} ${LP_SOLVE})
 	TARGET_LINK_LIBRARIES(sampler ${QD_LIB} ${MKL_LINK} ${LP_SOLVE} OpenMP::OpenMP_CXX)
 
+	add_executable (crhmc_sampling_custom_func crhmc_sampling_custom_func.cpp)
+	TARGET_LINK_LIBRARIES(crhmc_sampling_custom_func ${QD_LIB} ${MKL_LINK} ${LP_SOLVE})
+
 endif()
