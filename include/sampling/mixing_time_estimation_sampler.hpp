@@ -151,6 +151,7 @@ void finalize(PointList &randPoints,bool raw_output,unsigned int N){
   if(raw_output){
     return;
   }else{
+    unsigned int min_eff_samples=1;
     effective_sample_size<NT, VT, MT>(randPoints, min_eff_samples);
     unsigned int gap=std::ceil(N/min_eff_samples);
     randPoints=randPoints(1::N);

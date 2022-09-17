@@ -59,16 +59,11 @@ void sample_gaussian(HPOLYTOPE HP, int numpoints = 1000, int nburns = 0, int num
             << std::endl;
 }
 
-HPOLYTOPE visualization_example() {
-  MT Ab(5, 3);
-  Ab << -1, 0, 1, // x >= -1
-      0, -1, 1,   // y >= -1
-      1, -1, 8,   // x-y <= 8
-      -1, 1, 8,   // x-y >= -8
-      1, 1, 50;   // x+y <= 50
 
-  MT A = Ab.block(0, 0, 5, 2);
-  VT b = Ab.col(2);
+HPOLYTOPE visualization_example() {
+  MT A=MT(5,2);
+  A<<1, 0, -0.25, -1, 2.5, 1,0.4, -1,-0.9, 0.5;
+  VT b = 10*VT::Ones(5);
   return HPOLYTOPE(2, A, b);
 }
 
