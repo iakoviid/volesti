@@ -146,7 +146,16 @@ public:
     terminate=global_terminate;
   }
 };
-
+template<typename PointList>
+void finalize(PointList &randPoints,bool raw_output,unsigned int N){
+  if(raw_output){
+    return;
+  }else{
+    effective_sample_size<NT, VT, MT>(randPoints, min_eff_samples);
+    unsigned int gap=std::ceil(N/min_eff_samples);
+    randPoints=randPoints(1::N);
+  }
+}
 template <
     typename PointList,
     typename Polytope,
@@ -205,6 +214,7 @@ void crhmc_sampling(PointList &randPoints,
     }
 
   r.apply(crhmc_walk, rng);
+  finalize(randPoints,options.raw_output,rnum);
 }
 template <
     typename PointList,
@@ -275,5 +285,7 @@ void parallel_crhmc_sampling(PointList &randPoints,
     randPoints.rightCols(points[i].cols())=points[i];
     points[i].resize(0,0);
   }
+  finalize(randPoints,options.raw_output,rnum);
 }
+
 #endif

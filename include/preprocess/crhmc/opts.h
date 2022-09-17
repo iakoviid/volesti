@@ -40,6 +40,7 @@ public:
   bool DynamicStepSize = true;  // Enable adaptive step size that avoids low acceptance probability
   bool DynamicRegularizer = true; //Enable the addition of a regularization term
   Type regularization_factor=1e-20;
+  bool raw_output=false;
   /*Dynamic step choices*/
   Type warmUpStep = 10;
   int maxConsecutiveBadStep = 10;
