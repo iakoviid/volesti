@@ -75,7 +75,7 @@ struct CustomFunctor {
     Point operator()(Point const& x) const{
       Point y = (-1.0) * Point::all_ones(x.dimension());
       y = y + (-4.0) * x;
-      return y
+      return y;
     }
 
   };
