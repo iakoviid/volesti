@@ -214,7 +214,7 @@ void crhmc_sampling(PointList &randPoints,
   r.apply(crhmc_walk, rng);
   finalize(randPoints,options.raw_output);
   if(nburns>0 && nburns<randPoints.cols()){
-    int n_output=rnum-nburns;
+    int n_output=randPoints.cols()-nburns;
     randPoints.leftCols(n_output) = randPoints.rightCols(n_output);
     randPoints.conservativeResize(randPoints.rows(), n_output);
   }
@@ -286,7 +286,7 @@ void parallel_crhmc_sampling(PointList &randPoints,
   }
   finalize(randPoints,options.raw_output);
   if(nburns>0 && nburns<randPoints.cols()){
-    int n_output=rnum-nburns;
+    int n_output=randPoints.cols()-nburns;
     randPoints.leftCols(n_output) = randPoints.rightCols(n_output);
     randPoints.conservativeResize(randPoints.rows(), n_output);
   }
