@@ -155,7 +155,7 @@ void finalize(PointList &randPoints,bool raw_output){
     effective_sample_size<NT, VT, MT>(randPoints, min_eff_samples);
     int N=randPoints.cols();
     unsigned int gap=std::ceil(N/min_eff_samples);
-    randPoints=randPoints(Eigen::all.Eigen::seq(1,N,gap));
+    randPoints=randPoints(Eigen::all,Eigen::seq(1,N,gap));
   }
 }
 template <
@@ -216,7 +216,7 @@ void crhmc_sampling(PointList &randPoints,
   if(nburns>0 && nburns<randPoints.cols()){
     int n_output=rnum-nburns;
     randPoints.leftCols(n_output) = randPoints.rightCols(n_output);
-    randPoints.conservativeResize(chains.rows(), n_output);
+    randPoints.conservativeResize(randPoints.rows(), n_output);
   }
 }
 template <
@@ -288,7 +288,7 @@ void parallel_crhmc_sampling(PointList &randPoints,
   if(nburns>0 && nburns<randPoints.cols()){
     int n_output=rnum-nburns;
     randPoints.leftCols(n_output) = randPoints.rightCols(n_output);
-    randPoints.conservativeResize(chains.rows(), n_output);
+    randPoints.conservativeResize(randPoints.rows(), n_output);
   }
 }
 
