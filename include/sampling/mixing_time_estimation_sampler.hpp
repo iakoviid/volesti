@@ -155,7 +155,7 @@ void finalize(PointList &randPoints,bool raw_output){
     effective_sample_size<NT, VT, MT>(randPoints, min_eff_samples);
     int N=randPoints.cols();
     unsigned int gap=std::ceil(N/min_eff_samples);
-    randPoints=randPoints(Eigen::seq(1,N,gap));
+    randPoints=randPoints(Eigen::all.Eigen::seq(1,N,gap));
   }
 }
 template <
@@ -209,14 +209,15 @@ void crhmc_sampling(PointList &randPoints,
 
   typedef mixing_time_estimation_sampler<walk> RandomPointGenerator;
   RandomPointGenerator r = RandomPointGenerator(crhmc_walk, rnum, randPoints, input.dimension);
-  if(nburns > 0)
-    {
-      r.apply(crhmc_walk, rng, nburns);
-      r.clear();
-    }
+
 
   r.apply(crhmc_walk, rng);
   finalize(randPoints,options.raw_output);
+  if(nburns>0 && nburns<randPoints.cols()){
+    int n_output=rnum-nburns;
+    randPoints.leftCols(n_output) = randPoints.rightCols(n_output);
+    randPoints.conservativeResize(chains.rows(), n_output);
+  }
 }
 template <
     typename PointList,
@@ -284,6 +285,11 @@ void parallel_crhmc_sampling(PointList &randPoints,
     points[i].resize(0,0);
   }
   finalize(randPoints,options.raw_output);
+  if(nburns>0 && nburns<randPoints.cols()){
+    int n_output=rnum-nburns;
+    randPoints.leftCols(n_output) = randPoints.rightCols(n_output);
+    randPoints.conservativeResize(chains.rows(), n_output);
+  }
 }
 
 #endif
