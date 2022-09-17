@@ -147,14 +147,15 @@ public:
   }
 };
 template<typename PointList>
-void finalize(PointList &randPoints,bool raw_output,unsigned int N){
+void finalize(PointList &randPoints,bool raw_output){
   if(raw_output){
     return;
   }else{
     unsigned int min_eff_samples=1;
     effective_sample_size<NT, VT, MT>(randPoints, min_eff_samples);
+    int N=randPoints.cols();
     unsigned int gap=std::ceil(N/min_eff_samples);
-    randPoints=randPoints(1::N);
+    randPoints=randPoints(Eigen::seq(1,N,gap));
   }
 }
 template <
@@ -215,7 +216,7 @@ void crhmc_sampling(PointList &randPoints,
     }
 
   r.apply(crhmc_walk, rng);
-  finalize(randPoints,options.raw_output,rnum);
+  finalize(randPoints,options.raw_output);
 }
 template <
     typename PointList,
@@ -273,20 +274,16 @@ void parallel_crhmc_sampling(PointList &randPoints,
     }
     walk crhmc_walk= walk(P, p, input.df, input.f, params);
     RandomPointGenerator r=RandomPointGenerator(crhmc_walk, rnum, points[thread_index], input.dimension);
-  if(nburns > 0)
-    {
-      r.apply(crhmc_walk, rng, nburns);
-      r.clear();
-    }
 
   r.apply(crhmc_walk, rng);
+
   }
   for(unsigned int i=0;i<num_threads;i++){
     randPoints.conservativeResize(input.dimension,randPoints.cols()+points[i].cols());
     randPoints.rightCols(points[i].cols())=points[i];
     points[i].resize(0,0);
   }
-  finalize(randPoints,options.raw_output,rnum);
+  finalize(randPoints,options.raw_output);
 }
 
 #endif
