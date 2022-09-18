@@ -97,7 +97,8 @@ void resize(pts& samples,unsigned int n){
   {
     NT total_sampling_rate = sampling_rate + sampling_rate_outside;
     NT totalNumSamples = est_num_samples + est_num_samples_outside;
-    std::cerr<<"thread "<< thread_index<<" totalNumSamples "<<totalNumSamples<<"\n";
+    int thread_index = omp_get_thread_num();
+    std::cerr<<"thread "<< thread_index<<" totalNumSamples "<<totalNumSamples<<" estNumSamples "<<est_num_samples<<"\n";
     if (totalNumSamples > N && removedInitial)
     {
       terminate = true;
