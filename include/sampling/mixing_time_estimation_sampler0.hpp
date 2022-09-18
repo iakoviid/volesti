@@ -42,6 +42,8 @@ public:
   bool terminate = false;
   int N;
   int dimension;
+  int num_points=0;
+  int space=0;
   mixing_time_estimation_sampler(Walk &s, int num_samples, MT &output_matrix, int dim)
       : options(s.params.options), randPoints(output_matrix)
   {
@@ -49,25 +51,22 @@ public:
     N = num_samples;
     dimension = dim;
     chains=pts(options.simdLen,MT(s.dim,0));
-
   }
 
   NT min_ess(pts const &samples){
     NT minimum=std::numeric_limits<NT>::max();
     unsigned int min_eff_samples=0;
     for(int i=0;i<samples.size();i++){
-      VT ess= effective_sample_size<NT, VT, MT>(samples[i], min_eff_samples);
+      VT ess= effective_sample_size<NT, VT, MT>(samples[i].leftCols(numpoints), min_eff_samples);
       minimum=ess.minCoeff()<minimum ? ess.minCoeff():minimum;
     }
     return minimum;
   }
 void resize(pts& samples,unsigned int n){
-  unsigned int m=samples[0].cols()-n;
-  unsigned int rows=samples[0].rows();
   for(int i=0;i<samples.size();i++){
-    samples[i].leftCols(n)=samples[i].rightCols(n);
-    samples[i].conservativeResize(rows,m);
+    samples[i].leftCols(n)=samples[i](Eigen::all,Eigen::seq(num_points-n,num_points-1));
   }
+  num_points=num_points-n;
 }
   void estimation_step(Walk &s)
   {
@@ -76,18 +75,17 @@ void resize(pts& samples,unsigned int n){
       NT min_eff_samples = min_ess(chains);
       int thread_index = omp_get_thread_num();
       std::cerr<<"thread "<< thread_index<<" miness "<<min_eff_samples<<"\n";
-      int num_batches = chains[0].cols();
       if (removedInitial == false &&
           min_eff_samples > 2 * options.nRemoveInitialSamples)
       {
-        int k = std::ceil(options.nRemoveInitialSamples * (num_batches / min_eff_samples));
-        s.num_runs = std::ceil(s.num_runs * (1 - k / num_batches));
-        s.acceptedStep = s.acceptedStep * (1 - k / num_batches);
+        int k = std::ceil(options.nRemoveInitialSamples * (num_points / min_eff_samples));
+        s.num_runs = std::ceil(s.num_runs * (1 - k / num_points));
+        s.acceptedStep = s.acceptedStep * (1 - k / num_points);
         resize(chains,k);
         removedInitial = true;
         NT min_eff_samples = min_ess(chains);
       }
-      NT mixingTime = num_batches / min_eff_samples;
+      NT mixingTime = num_points / min_eff_samples;
       sampling_rate = s.simdLen / mixingTime;
       est_num_samples = s.num_runs * sampling_rate;
       estimation_update(s);
@@ -114,8 +112,13 @@ void resize(pts& samples,unsigned int n){
   }
   void push_back_sample(pts &samples,MT const& x){
     for(int i=0;i<samples.size();i++){
-      samples[i].conservativeResize(samples[i].rows(),samples[i].cols()+1);
-      samples[i].col(samples[i].cols()-1)=x.col(i);
+      if(num_points>=space/2.0){
+        space=space==0 ? 1: 1000;
+        samples[i].conservativeResize(samples[i].rows(),2*space);
+        space*=2;
+      }
+      samples[i].col(num_points)=x.col(i);
+      num_points++;
     }
   }
   template <typename RNGType>
@@ -171,6 +174,9 @@ void resize(pts& samples,unsigned int n){
   //Compress the vectorized sample
   void finalize(Walk &s, pts &chains,MT &randPoints,bool raw_output){
     unsigned int dimension=s.P.y.rows();
+    for(int i=0;i<chains.size();i++){
+      chains[i].conservativeResize(chains[i].rows,numpoints);
+    }
     if(raw_output){
     for(int i=0;i<chains.size();i++){
       randPoints.conservativeResize(dimension,randPoints.cols()+chains[i].cols());
@@ -213,7 +219,6 @@ void crhmc_sampling(PointList &randPoints,
                     Input &input,
                     Opts &options)
 {
-  using pts= typename std::vector<PointList>;
   using NegativeGradientFunctor = typename Input::Grad;
   using NegativeLogprobFunctor = typename Input::Func;
   typedef typename WalkTypePolicy::template Walk<
@@ -274,7 +279,6 @@ void parallel_crhmc_sampling(PointList &randPoints,
                     unsigned int const& num_threads)
 {
   std::cerr<<"Number of threads "<<num_threads<<"\n";
-  using pts= typename std::vector<PointList>;
   using NegativeGradientFunctor = typename Input::Grad;
   using NegativeLogprobFunctor = typename Input::Func;
   typedef typename WalkTypePolicy::template Walk<
