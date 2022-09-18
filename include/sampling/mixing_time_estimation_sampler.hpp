@@ -27,7 +27,7 @@ class mixing_time_estimation_sampler
   using MT = typename Walk::MT;
   using VT = typename Walk::VT;
   using Opts = typename Walk::Opts;
-
+  using pts= typename std::vector<MT>;
 public:
   bool removedInitial = false;
   NT sampling_rate = 0;
@@ -37,11 +37,11 @@ public:
   int totalNumSamples = 0;
   Opts &options;
   NT nextEstimateStep;
-  MT &chains;
+  pts &chains;
   bool terminate = false;
   int N;
   int dimension;
-  mixing_time_estimation_sampler(Walk &s, int num_samples, MT &randPoints, int dim)
+  mixing_time_estimation_sampler(Walk &s, int num_samples, pts &randPoints, int dim)
       : options(s.params.options), chains(randPoints)
   {
     nextEstimateStep = options.initialStepEst;
@@ -49,27 +49,42 @@ public:
     dimension = dim;
   }
 
+  NT min_eff_samples(pts const &samples){
+    NT min_ess=std::numeric_limits<NT>::max();
+    int min_eff_samples=0;
+    for(int i=0;i<samples.size();i++){
+      VT ess= effective_sample_size<NT, VT, MT>(samples[i], min_eff_samples);
+      min_ess=ess.minCoeff()<min_ess ? ess.minCoeff():min_ess;
+    }
+    return min_ess;
+  }
+void resize(pts& samples,unsigned int n){
+  unsigned int m=samples[0].cols()-n;
+  unsigned int rows=samples[0].rows();
+  for(int i=0;i<samples.size();i++){
+    samples[i].leftCols(m)=samples.rightCols(m);
+    samples[i].conservativeResize(rows,m);
+  }
+}
   void estimation_step(Walk &s)
   {
     if (s.nEffectiveStep.mean() > nextEstimateStep)
     {
-      unsigned int min_eff_samples = 1;
-      effective_sample_size<NT, VT, MT>(chains, min_eff_samples);
-      std::cerr<<min_eff_samples<<"\n";
+      NT min_eff_samples = min_eff_samples(chains);
+      int thread_index = omp_get_thread_num();
+      std::cerr<<"thread "<< thread_index<<"miness "<<min_eff_samples<<"\n";
+      int num_batches = chains[0].cols()
       if (removedInitial == false &&
           min_eff_samples > 2 * options.nRemoveInitialSamples)
       {
-        int num_batches = chains.cols() / s.simdLen;
         int k = std::ceil(options.nRemoveInitialSamples * (num_batches / min_eff_samples));
         s.num_runs = std::ceil(s.num_runs * (1 - k / num_batches));
         s.acceptedStep = s.acceptedStep * (1 - k / num_batches);
-        int q = chains.cols() - (k - 1) * s.simdLen;
-        chains.leftCols(q) = chains.rightCols(q);
-        chains.conservativeResize(chains.rows(), q);
+        resize(chains,k);
         removedInitial = true;
-        effective_sample_size<NT, VT, MT>(chains, min_eff_samples);
+        NT min_eff_samples = min_eff_samples(chains);
       }
-      int num_batches = chains.cols() / s.simdLen;
+      int num_batches = num_batches / s.simdLen;
       NT mixingTime = num_batches / min_eff_samples;
       sampling_rate = s.simdLen / mixingTime;
       est_num_samples = s.num_runs * sampling_rate;
@@ -95,6 +110,12 @@ public:
       nextEstimateStep = std::min(nextEstimateStep * options.step_multiplier, estimateEndingStep);
     }
   }
+  void push_back_sample(pts &samples,MT const& x){
+    for(int i=0;i<samples.size();i++){
+      samples[i].conservativeResize(samples[i].rows(),samples[i].cols()+1);
+      samples[i].col(samples[i].cols()-1)=x.col(i);
+    }
+  }
   template <typename RNGType>
   void apply(Walk &s, RNGType &rng)
   {
@@ -105,9 +126,8 @@ public:
       if(options.num_threads > 1){
         sync();
       }
-      MT sample = s.getPoints();
-      chains.conservativeResize(dimension, chains.cols() + s.simdLen);
-      chains.rightCols(s.simdLen) = sample;
+      MT sample = s.x;
+      push_back_sample(chains,sample);
     }
   }
   void clear(){
@@ -124,9 +144,8 @@ public:
       if(options.num_threads > 1){
         sync();
       }
-      MT sample = s.getPoints();
-      chains.conservativeResize(dimension, chains.cols() + s.simdLen);
-      chains.rightCols(s.simdLen) = sample;
+      MT sample = s.x;
+      push_back_sample(chains,sample);
     }
   }
   //Broadcast terminate, sampling_rate, est_num_samples
@@ -146,16 +165,29 @@ public:
     terminate=global_terminate;
   }
 };
-template<typename PointList>
-void finalize(PointList &randPoints,bool raw_output){
+//Compress the vectorized sample
+template<typename Walk,typename PointList>
+void finalize(Walk s, std::vector<PointList> &chains,PointList &randPoints,bool raw_output){
+  using NT = typename Walk::NT;
+  using MT = typename Walk::MT;
+  using VT = typename Walk::VT;
+  unsigned int dimension=s.P.y.cols();
   if(raw_output){
-    return;
+  for(int i=0;i<chains.size();i++){
+    randPoints.conservativeResize(dimension,randPoints.cols()+chains[i].cols());
+    randPoints.rightCols(chains[i].cols())=(s.P.T*chains[i]).colwise()+s.P.y;
+    chains[i].resize(0,0);
+    }
   }else{
-    unsigned int min_eff_samples=1;
-    effective_sample_size<NT, VT, MT>(randPoints, min_eff_samples);
-    int N=randPoints.cols();
-    unsigned int gap=std::ceil(N/min_eff_samples);
-    randPoints=randPoints(Eigen::all,Eigen::seq(1,N,gap));
+    int N=chains[0].cols();
+    for(int i=0;i<chains.size();i++){
+        NT min_ess=effective_sample_size<NT, VT, MT>(chains[i],min_eff_samples).minCoeff();
+        unsigned int gap=std::ceil(N/min_ess);
+        unsigned int n=chains[i](Eigen::all,Eigen::seq(0,N-1,gap)).cols();
+        randPoints.conservativeResize(dimension,n);
+        randPoints.rightCols(n)=(s.P.T*chains[i](Eigen::all,Eigen::seq(0,N-1,gap))).colwise()+s.P.y;
+        chains[i].resize(0,0);
+    }
   }
 }
 template <
@@ -178,6 +210,7 @@ void crhmc_sampling(PointList &randPoints,
                     Input &input,
                     Opts &options)
 {
+  using pts= typename std::vector<PointList>;
   using NegativeGradientFunctor = typename Input::Grad;
   using NegativeLogprobFunctor = typename Input::Func;
   typedef typename WalkTypePolicy::template Walk<
@@ -208,11 +241,10 @@ void crhmc_sampling(PointList &randPoints,
   walk crhmc_walk = walk(P, p, input.df, input.f, params);
 
   typedef mixing_time_estimation_sampler<walk> RandomPointGenerator;
-  RandomPointGenerator r = RandomPointGenerator(crhmc_walk, rnum, randPoints, input.dimension);
-
-
+  pts chains;
+  RandomPointGenerator r = RandomPointGenerator(crhmc_walk, rnum, chains, input.dimension);
   r.apply(crhmc_walk, rng);
-  finalize(randPoints,options.raw_output);
+  finalize(crhmc_walk, chains, randPoints,options.raw_output);
   if(nburns>0 && nburns<randPoints.cols()){
     int n_output=randPoints.cols()-nburns;
     randPoints.leftCols(n_output) = randPoints.rightCols(n_output);
@@ -241,6 +273,7 @@ void parallel_crhmc_sampling(PointList &randPoints,
                     unsigned int const& num_threads)
 {
   std::cerr<<"Number of threads "<<num_threads<<"\n";
+  using pts= typename std::vector<PointList>;
   using NegativeGradientFunctor = typename Input::Grad;
   using NegativeLogprobFunctor = typename Input::Func;
   typedef typename WalkTypePolicy::template Walk<
@@ -265,6 +298,7 @@ void parallel_crhmc_sampling(PointList &randPoints,
 
   typedef mixing_time_estimation_sampler<walk> RandomPointGenerator;
   std::vector<PointList> points(num_threads);
+  std::vector<pts> chains(num_threads);
   #pragma omp parallel
   {
     int thread_index = omp_get_thread_num();
@@ -274,17 +308,15 @@ void parallel_crhmc_sampling(PointList &randPoints,
       params.eta = input.df.params.eta;
     }
     walk crhmc_walk= walk(P, p, input.df, input.f, params);
-    RandomPointGenerator r=RandomPointGenerator(crhmc_walk, rnum, points[thread_index], input.dimension);
-
-  r.apply(crhmc_walk, rng);
-
+    RandomPointGenerator r=RandomPointGenerator(crhmc_walk, rnum, chains[thread_index], input.dimension);
+    r.apply(crhmc_walk, rng);
+    finalize(crhmc_walk, chains[thread_index], points[thread_index],options.raw_output);
   }
   for(unsigned int i=0;i<num_threads;i++){
     randPoints.conservativeResize(input.dimension,randPoints.cols()+points[i].cols());
     randPoints.rightCols(points[i].cols())=points[i];
     points[i].resize(0,0);
   }
-  finalize(randPoints,options.raw_output);
   if(nburns>0 && nburns<randPoints.cols()){
     int n_output=randPoints.cols()-nburns;
     randPoints.leftCols(n_output) = randPoints.rightCols(n_output);

@@ -28,7 +28,7 @@ using CrhmcProblem = crhmc_problem<Point, Input>;
 using Solver = ImplicitMidpointODESolver<Point, NT, CrhmcProblem, Grad>;
 void sample_gaussian(HPOLYTOPE HP, int numpoints = 1000, int nburns = 0, int num_threads=1) {
   int dimension = HP.dimension();
-  NT variance = 1.0;
+  NT variance = 8.0;
   func_params params = func_params(Point(dimension), variance, 1);
   Func f(params);
   Grad g(params);
