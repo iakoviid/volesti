@@ -57,7 +57,7 @@ public:
     NT minimum=std::numeric_limits<NT>::max();
     unsigned int min_eff_samples=0;
     for(int i=0;i<samples.size();i++){
-      VT ess= effective_sample_size<NT, VT, MT>(samples[i].leftCols(numpoints), min_eff_samples);
+      VT ess= effective_sample_size<NT, VT, MT>(samples[i].leftCols(num_points), min_eff_samples);
       minimum=ess.minCoeff()<minimum ? ess.minCoeff():minimum;
     }
     return minimum;
@@ -111,15 +111,17 @@ void resize(pts& samples,unsigned int n){
     }
   }
   void push_back_sample(pts &samples,MT const& x){
-    for(int i=0;i<samples.size();i++){
-      if(num_points>=space/2.0){
-        space=space==0 ? 1: 1000;
-        samples[i].conservativeResize(samples[i].rows(),2*space);
-        space*=2;
+    if(num_points>=space/2.0){
+      space=space==0 ? 1000:space;
+      for(int i=0;i<samples.size();i++){
+      samples[i].conservativeResize(samples[i].rows(),2*space);
       }
-      samples[i].col(num_points)=x.col(i);
-      num_points++;
+      space*=2;
     }
+    for(int i=0;i<samples.size();i++){
+      samples[i].col(num_points)=x.col(i);
+    }
+    num_points++;
   }
   template <typename RNGType>
   void apply(Walk &s, RNGType &rng)
@@ -175,7 +177,7 @@ void resize(pts& samples,unsigned int n){
   void finalize(Walk &s, pts &chains,MT &randPoints,bool raw_output){
     unsigned int dimension=s.P.y.rows();
     for(int i=0;i<chains.size();i++){
-      chains[i].conservativeResize(chains[i].rows,numpoints);
+      chains[i].conservativeResize(chains[i].rows(),num_points);
     }
     if(raw_output){
     for(int i=0;i<chains.size();i++){
@@ -253,7 +255,7 @@ void crhmc_sampling(PointList &randPoints,
   r.apply(crhmc_walk, rng);
   if(nburns>0 && nburns<randPoints.cols()){
     int n_output=randPoints.cols()-nburns;
-    randPoints.leftCols(n_output) = randPoints.rightCols(n_output);
+    randPoints.leftCols(nburns) = randPoints.rightCols(nburns);
     randPoints.conservativeResize(randPoints.rows(), n_output);
   }
 }
@@ -322,7 +324,7 @@ void parallel_crhmc_sampling(PointList &randPoints,
   }
   if(nburns>0 && nburns<randPoints.cols()){
     int n_output=randPoints.cols()-nburns;
-    randPoints.leftCols(n_output) = randPoints.rightCols(n_output);
+    randPoints.leftCols(nburns) = randPoints.rightCols(nburns);
     randPoints.conservativeResize(randPoints.rows(), n_output);
   }
 }

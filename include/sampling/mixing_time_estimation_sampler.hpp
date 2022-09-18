@@ -97,6 +97,7 @@ void resize(pts& samples,unsigned int n){
   {
     NT total_sampling_rate = sampling_rate + sampling_rate_outside;
     NT totalNumSamples = est_num_samples + est_num_samples_outside;
+    std::cerr<<"thread "<< thread_index<<" totalNumSamples "<<totalNumSamples<<"\n";
     if (totalNumSamples > N && removedInitial)
     {
       terminate = true;
@@ -316,7 +317,7 @@ void parallel_crhmc_sampling(PointList &randPoints,
   }
   if(nburns>0 && nburns<randPoints.cols()){
     int n_output=randPoints.cols()-nburns;
-    randPoints.leftCols(n_output) = randPoints.rightCols(n_output);
+    randPoints.leftCols(nburns) = randPoints.rightCols(nburns);
     randPoints.conservativeResize(randPoints.rows(), n_output);
   }
 }
