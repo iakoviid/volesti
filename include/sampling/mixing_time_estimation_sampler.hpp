@@ -242,7 +242,7 @@ void crhmc_sampling(PointList &randPoints,
   walk crhmc_walk = walk(P, p, input.df, input.f, params);
 
   typedef mixing_time_estimation_sampler<walk> RandomPointGenerator;
-  pts chains(options.simdLen,MT(0,0));
+  pts chains(options.simdLen,MT(dim,0));
   RandomPointGenerator r = RandomPointGenerator(crhmc_walk, rnum, chains, input.dimension);
   r.apply(crhmc_walk, rng);
   finalize(crhmc_walk, chains, randPoints,options.raw_output);
@@ -309,7 +309,7 @@ void parallel_crhmc_sampling(PointList &randPoints,
       params.eta = input.df.params.eta;
     }
     walk crhmc_walk= walk(P, p, input.df, input.f, params);
-    chains[thread_index]= pts(options.simdLen,MT(0,0));
+    chains[thread_index]= pts(options.simdLen,MT(dim,0));
     RandomPointGenerator r=RandomPointGenerator(crhmc_walk, rnum, chains[thread_index], input.dimension);
     r.apply(crhmc_walk, rng);
     finalize(crhmc_walk, chains[thread_index], points[thread_index],options.raw_output);
