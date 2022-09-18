@@ -49,14 +49,14 @@ public:
     dimension = dim;
   }
 
-  NT min_eff_samples(pts const &samples){
-    NT min_ess=std::numeric_limits<NT>::max();
+  NT min_ess(pts const &samples){
+    NT minimum=std::numeric_limits<NT>::max();
     int min_eff_samples=0;
     for(int i=0;i<samples.size();i++){
       VT ess= effective_sample_size<NT, VT, MT>(samples[i], min_eff_samples);
-      min_ess=ess.minCoeff()<min_ess ? ess.minCoeff():min_ess;
+      minimum=ess.minCoeff()<minimum ? ess.minCoeff():minimum;
     }
-    return min_ess;
+    return minimum;
   }
 void resize(pts& samples,unsigned int n){
   unsigned int m=samples[0].cols()-n;
@@ -70,10 +70,10 @@ void resize(pts& samples,unsigned int n){
   {
     if (s.nEffectiveStep.mean() > nextEstimateStep)
     {
-      NT min_eff_samples = min_eff_samples(chains);
+      NT min_eff_samples = min_ess(chains);
       int thread_index = omp_get_thread_num();
       std::cerr<<"thread "<< thread_index<<"miness "<<min_eff_samples<<"\n";
-      int num_batches = chains[0].cols()
+      int num_batches = chains[0].cols();
       if (removedInitial == false &&
           min_eff_samples > 2 * options.nRemoveInitialSamples)
       {
@@ -82,9 +82,8 @@ void resize(pts& samples,unsigned int n){
         s.acceptedStep = s.acceptedStep * (1 - k / num_batches);
         resize(chains,k);
         removedInitial = true;
-        NT min_eff_samples = min_eff_samples(chains);
+        NT min_eff_samples = min_ess(chains);
       }
-      int num_batches = num_batches / s.simdLen;
       NT mixingTime = num_batches / min_eff_samples;
       sampling_rate = s.simdLen / mixingTime;
       est_num_samples = s.num_runs * sampling_rate;
@@ -181,11 +180,13 @@ void finalize(Walk s, std::vector<PointList> &chains,PointList &randPoints,bool 
   }else{
     int N=chains[0].cols();
     for(int i=0;i<chains.size();i++){
-        NT min_ess=effective_sample_size<NT, VT, MT>(chains[i],min_eff_samples).minCoeff();
-        unsigned int gap=std::ceil(N/min_ess);
-        unsigned int n=chains[i](Eigen::all,Eigen::seq(0,N-1,gap)).cols();
+      unsigned int min_eff_samples=0;
+        NT ess=effective_sample_size<NT, VT, MT>(chains[i],min_eff_samples).minCoeff();
+        unsigned int gap=std::ceil(N/ess);
+        MT points=chains[i](Eigen::all,Eigen::seq(0,N-1,gap));
+        unsigned int n=points.cols();
         randPoints.conservativeResize(dimension,n);
-        randPoints.rightCols(n)=(s.P.T*chains[i](Eigen::all,Eigen::seq(0,N-1,gap))).colwise()+s.P.y;
+        randPoints.rightCols(n)=(s.P.T*points).colwise()+s.P.y;
         chains[i].resize(0,0);
     }
   }
