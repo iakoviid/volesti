@@ -110,9 +110,16 @@ void resize(pts& samples,unsigned int n){
     }
   }
   void push_back_sample(pts &samples,MT const& x){
+    std::cerr << "-----------------------------------------" << "n";
+    std::cerr<<x<<"\n";
     for(int i=0;i<samples.size();i++){
       samples[i].conservativeResize(samples[i].rows(),samples[i].cols()+1);
       samples[i].col(samples[i].cols()-1)=x.col(i);
+      std::cerr<<"samples["<<i<<"]= "<<"\n";
+      std::cerr<<samples[i]<<"\n";
+    }
+    if(s.num_runs>5){
+    exit(1);
     }
   }
   template <typename RNGType>
