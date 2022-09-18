@@ -105,6 +105,9 @@ void resize(pts& samples,unsigned int n){
     {
       NT estimateEndingStep = N / total_sampling_rate * ((s.nEffectiveStep).mean() / s.num_runs);
       nextEstimateStep = std::min(nextEstimateStep * options.step_multiplier, estimateEndingStep);
+      std::cerr<<"N= "<<N<<" total_sampling_rate= "<<total_sampling_rate<<"\n";
+      std::cerr<<"(s.nEffectiveStep).mean()= "<<(s.nEffectiveStep).mean()<<" s.num_runs= "<<s.num_runs<<"\n";
+      std::cerr<<estimateEndingStep<<" "<<nextEstimateStep<<"\n";
     }
     else
     {
