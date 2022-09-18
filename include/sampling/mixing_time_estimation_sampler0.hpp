@@ -154,6 +154,9 @@ void resize(pts& samples,unsigned int n){
       }
       MT sample = s.x;
       push_back_sample(chains,sample);
+      int thread_index = omp_get_thread_num();
+      if(thread_index==0&&i%1000==0){std::cerr<<i<<" out of "<<N<<"\n";}
+      if(terminate){break;}
     }
     finalize(s, chains, randPoints,options.raw_output);
   }
@@ -315,7 +318,7 @@ void parallel_crhmc_sampling(PointList &randPoints,
     }
     walk crhmc_walk= walk(P, p, input.df, input.f, params);
     RandomPointGenerator r=RandomPointGenerator(crhmc_walk, rnum, points[thread_index], input.dimension);
-    r.apply(crhmc_walk, rng);
+    r.apply(crhmc_walk, rng,100000);
   }
   for(unsigned int i=0;i<num_threads;i++){
     randPoints.conservativeResize(input.dimension,randPoints.cols()+points[i].cols());
