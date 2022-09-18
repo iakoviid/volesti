@@ -51,7 +51,7 @@ public:
 
   NT min_ess(pts const &samples){
     NT minimum=std::numeric_limits<NT>::max();
-    int min_eff_samples=0;
+    unsigned int min_eff_samples=0;
     for(int i=0;i<samples.size();i++){
       VT ess= effective_sample_size<NT, VT, MT>(samples[i], min_eff_samples);
       minimum=ess.minCoeff()<minimum ? ess.minCoeff():minimum;
@@ -62,7 +62,7 @@ void resize(pts& samples,unsigned int n){
   unsigned int m=samples[0].cols()-n;
   unsigned int rows=samples[0].rows();
   for(int i=0;i<samples.size();i++){
-    samples[i].leftCols(m)=samples.rightCols(m);
+    samples[i].leftCols(m)=samples[i].rightCols(m);
     samples[i].conservativeResize(rows,m);
   }
 }
@@ -242,7 +242,7 @@ void crhmc_sampling(PointList &randPoints,
   walk crhmc_walk = walk(P, p, input.df, input.f, params);
 
   typedef mixing_time_estimation_sampler<walk> RandomPointGenerator;
-  pts chains;
+  pts chains(options.simdLen,MT(0,0));
   RandomPointGenerator r = RandomPointGenerator(crhmc_walk, rnum, chains, input.dimension);
   r.apply(crhmc_walk, rng);
   finalize(crhmc_walk, chains, randPoints,options.raw_output);
@@ -309,6 +309,7 @@ void parallel_crhmc_sampling(PointList &randPoints,
       params.eta = input.df.params.eta;
     }
     walk crhmc_walk= walk(P, p, input.df, input.f, params);
+    chains[thread_index]= pts(options.simdLen,MT(0,0));
     RandomPointGenerator r=RandomPointGenerator(crhmc_walk, rnum, chains[thread_index], input.dimension);
     r.apply(crhmc_walk, rng);
     finalize(crhmc_walk, chains[thread_index], points[thread_index],options.raw_output);
