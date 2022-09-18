@@ -213,7 +213,6 @@ void crhmc_sampling(PointList &randPoints,
                     Input &input,
                     Opts &options)
 {
-  using pts= typename std::vector<PointList>;
   using NegativeGradientFunctor = typename Input::Grad;
   using NegativeLogprobFunctor = typename Input::Func;
   typedef typename WalkTypePolicy::template Walk<
@@ -274,7 +273,6 @@ void parallel_crhmc_sampling(PointList &randPoints,
                     unsigned int const& num_threads)
 {
   std::cerr<<"Number of threads "<<num_threads<<"\n";
-  using pts= typename std::vector<PointList>;
   using NegativeGradientFunctor = typename Input::Grad;
   using NegativeLogprobFunctor = typename Input::Func;
   typedef typename WalkTypePolicy::template Walk<
