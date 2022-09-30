@@ -354,5 +354,16 @@ PackedCSparse::SparseMatrix<Type,IndexType> transform_format(SparseMatrixType co
   A.p[A.n] = nnz;
   return A;
 }
-
+template<typename MatrixType, typename IndexType>
+void copy_indicies(MatrixType& a, MatrixType& b, std::vector<IndexType> a_idx, std::vector<IndexType> b_idx){
+for(int i=0;i<b_idx.size();i++){
+  a(a_idx[i])=b(b_idx[i]);
+}
+}
+template<typename MatrixType, typename IndexType>
+void copy_indicies(MatrixType& a, MatrixType& b, std::vector<IndexType> b_idx){
+for(int i=0;i<b_idx.size();i++){
+  a(i)=b(b_idx[i]);
+}
+}
 #endif

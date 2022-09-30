@@ -179,7 +179,8 @@ std::tuple<VT, SpMat, VT, VT> lewis_center(SpMat const &A, VT const &b, Polytope
       sparseIdx.push_back(Triple(i, idx[i], A_(idx[i])));
     }
     C.setFromTriplets(sparseIdx.begin(), sparseIdx.end());
-    d = b_(idx);
+    d.resize(idx.size(), 1);
+    copy_indicies(d, b_, idx);
   }
   else
   {

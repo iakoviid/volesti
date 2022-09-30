@@ -132,7 +132,7 @@ public:
       append_map(S, x);
       barrier.set_bound(barrier.lb(indices), barrier.ub(indices));
       if (!isempty_center) {
-        center.topRows(indices.size()) = center(indices);
+        copy_indicies(center, center, indices);
         center.conservativeResize(indices.size());
       }
       return 1;
@@ -307,7 +307,7 @@ public:
     }
 
     remove_rows<SpMat, NT>(Asp, indices);
-    b.topRows(idx.size()) = b(idx);
+    copy_indicies(b, b, idx);
     b.conservativeResize(idx.size(), 1);
     return 1;
   }
@@ -661,14 +661,16 @@ void print_preparation_time(StreamType& stream){
     MT z = MT::Zero(y.rows(), m);
     if (fHandle || dfHandle || ddfHandle) {
       for(int k=0;k<m;k++){
-        z(Eigen::all,k) = Ta.cwiseProduct(x(Tidx, k)) + y;
+        for(int i=0;i<Tidx.size();i++){
+          z(i,k) = Ta(i)*x(Tidx[i], k) + y(i);
+        }
       }
     }
 
     // If the function is given evaluate it at the original point
     if (fHandle) {
       for(int k=0;k<m;k++){
-        f(k) = func(Point(z(Eigen::all,k)));
+        f(k) = func(Point(z.col(k)));
       }
     } else {
       f = VT::Zero(m);
@@ -677,7 +679,10 @@ void print_preparation_time(StreamType& stream){
     if (dfHandle) {
       g = MT::Zero(n, m);
       for(int k=0;k<m;k++){
-        g(Tidx, k) += Ta.cwiseProduct(df(Point(z(Eigen::all,k))).getCoefficients());
+        VT dfz=df(Point(z.col(k))).getCoefficients();
+        for(int i=0;i<Tidx.size();i++){
+        g(Tidx[i], k) += Ta(i)*dfz(i);
+      }
       }
     } else {
       g = MT::Zero(n, m);
@@ -686,8 +691,10 @@ void print_preparation_time(StreamType& stream){
     if (ddfHandle) {
       h = MT::Zero(n, m);
       for(int k=0;k<m;k++){
-        h(Tidx, k) +=
-        (Ta.cwiseProduct(Ta)).cwiseProduct(ddf(Point(z(Eigen::all,k))).getCoefficients());
+        VT ddfz=ddf(Point(z.col(k))).getCoefficients();
+        for(int i=0;i<Tidx.size();i++){
+        h(Tidx[i], k) +=Ta(i)*Ta(i)*ddfz(i);
+      }
       }
     } else {
       h = MT::Zero(n,m);
