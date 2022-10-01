@@ -612,6 +612,12 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
     } else if (Rcpp::as<std::string>(Rcpp::as<Rcpp::List>(random_walk)["walk"]).compare(std::string("ULD")) == 0) {
         if (!logconcave) throw Rcpp::exception("ULD is not supported for non first-order sampling");
         walk = uld;
+    } else if(Rcpp::as<std::string>(Rcpp::as<Rcpp::List>(random_walk)["walk"]).compare(std::string("CRHMC")) == 0){
+        if (!logconcave) throw Rcpp::exception("CRHMC is usef for logconcave sampling");
+        if (type !=1) {
+            throw Rcpp::exception("CRHMC sampling is supported only for H-polytopes");
+        }
+        walk =crhmc;
     } else {
         throw Rcpp::exception("Unknown walk type!");
     }
