@@ -159,6 +159,8 @@ void check_norm_progress(Solver &solver, int num_steps, std::vector<NT> target,
 template <typename NT> void test_implicit_midpoint() {
   typedef Cartesian<NT> Kernel;
   typedef typename Kernel::Point Point;
+  using MT = Eigen::Matrix<NT, Eigen::Dynamic, Eigen::Dynamic>;
+  using VT = Eigen::Matrix<NT, Eigen::Dynamic, 1>;
   typedef std::vector<MT> pts;
   typedef GaussianFunctor::GradientFunctor<Point> grad;
   typedef GaussianFunctor::FunctionFunctor<Point> func;
