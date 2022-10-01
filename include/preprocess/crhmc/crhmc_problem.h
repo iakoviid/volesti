@@ -55,6 +55,7 @@ public:
   using Func = typename Input::Func;
   using Grad = typename Input::Grad;
   using Hess = typename Input::Hess;
+  using Crhmc_problem=crhmc_problem<Point, Input>;
 
   unsigned int _d; // dimension
   // Problem variables Ax=b st lb<=x<=ub
@@ -144,11 +145,11 @@ public:
     SpMat Ac;
     VT bc;
     if (isempty_center) {
-      std::tie(center, Ac, bc) = analytic_center(Asp, b, *this, options);
+      std::tie(center, Ac, bc) = analytic_center<Crhmc_problem, SpMat, Opts, MT, VT, NT>(Asp, b, *this, options);
       isempty_center = false;
     } else {
       std::tie(center, Ac, bc) =
-          analytic_center(Asp, b, *this, options, center);
+          analytic_center<Crhmc_problem, SpMat, Opts, MT, VT, NT>(Asp, b, *this, options, center);
           analytic_ctr=center;
     }
     if (Ac.rows() == 0) {
@@ -564,7 +565,7 @@ public:
 #endif
     if (isempty_center) {
       std::tie(center, std::ignore, std::ignore) =
-          analytic_center(Asp, b, *this, options);
+          analytic_center<Crhmc_problem, SpMat, Opts, MT, VT, NT>(Asp, b, *this, options);
       isempty_center = false;
     }
     shift_barrier(center);
@@ -587,7 +588,7 @@ public:
     start = std::chrono::system_clock::now();
 #endif
     std::tie(center, std::ignore, std::ignore, w_center) =
-        lewis_center(Asp, b, *this, options, center);
+        lewis_center<Crhmc_problem, SpMat, Opts, MT, VT, NT>(Asp, b, *this, options, center);
     std::tie(std::ignore, hess) = lewis_center_oracle(center, w_center);
     CholObj solver = CholObj(transform_format<SpMat,NT,int>(Asp));
     solver.accuracyThreshold = 0;
