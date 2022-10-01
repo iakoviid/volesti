@@ -38,7 +38,8 @@ enum random_walks {
   hmc,
   gaussian_hmc,
   exponential_hmc,
-  uld
+  uld,
+  crhmc
 };
 
 template <
@@ -48,7 +49,8 @@ template <
         typename NT,
         typename Point,
         typename NegativeGradientFunctor,
-        typename NegativeLogprobFunctor
+        typename NegativeLogprobFunctor,
+        typename HessianFunctor
 >
 void sample_from_polytope(Polytope &P, int type, RNGType &rng, PointList &randPoints,
                           unsigned int const& walkL, unsigned int const& numpoints,
@@ -56,7 +58,7 @@ void sample_from_polytope(Polytope &P, int type, RNGType &rng, PointList &randPo
                           Point const& StartingPoint, unsigned int const& nburns,
                           bool const& set_L, NT const& eta, random_walks walk,
                           NegativeGradientFunctor *F=NULL, NegativeLogprobFunctor *f=NULL,
-                          ode_solvers solver_type = no_solver)
+                          HessianFunctor *h=NULL, ode_solvers solver_type = no_solver)
 {
     switch (walk)
     {
@@ -213,6 +215,36 @@ void sample_from_polytope(Polytope &P, int type, RNGType &rng, PointList &randPo
       }
 
       break;
+    case crhmc:
+      typedef  typename Polytope::MT MatrixType;
+      typedef  crhmc_input
+            <
+                    MatrixType,
+                    Point,
+                    NegativeLogprobFunctor,
+                    NegativeGradientFunctor,
+                    HessianFunctor
+            > Input;
+      typedef crhmc_problem<Point, Input> CrhmcProblem;
+      crhmc_sampling <
+        PointList,
+        Polytope,
+        RNGType,
+        CRHMCWalk,
+        NT,
+        Point,
+        NegativeGradientFunctor,
+        NegativeLogprobFunctor,
+        HessianFunctor,
+        ImplicitMidpointODESolver <
+        Point,
+        NT,
+        CrhmcProblem,
+        NegativeGradientFunctor
+        >
+      >(randPoints, P, rng, walkL, numpoints, StartingPoint, nburns, *F, *f, *h, 4);
+
+      break;
     case uld:
 
       logconcave_sampling <
@@ -326,8 +358,11 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
 
     RcppFunctor::GradientFunctor<Point> *F = NULL;
     RcppFunctor::FunctionFunctor<Point> *f = NULL;
+    RcppFunctor::HessianFunctor<Point> *h = NULL;
+
     GaussianFunctor::GradientFunctor<Point> *G = NULL;
     GaussianFunctor::FunctionFunctor<Point> *g = NULL;
+    GaussianFunctor::HessianFunctor<Point> *hess_g =NULL;
     bool functor_defined = true;
 
 
@@ -627,11 +662,11 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
             }
             if (functor_defined) {
                 sample_from_polytope(HP, type, rng, randPoints, walkL, numpoints, gaussian, a, L, c,
-                    StartingPoint, nburns, set_L, eta, walk, F, f, solver);
+                    StartingPoint, nburns, set_L, eta, walk, F, f, h, solver);
             }
             else {
                 sample_from_polytope(HP, type, rng, randPoints, walkL, numpoints, gaussian, a, L, c,
-                    StartingPoint, nburns, set_L, eta, walk, G, g, solver);
+                    StartingPoint, nburns, set_L, eta, walk, G, g, hess_g, solver);
             }
             break;
         }
@@ -653,7 +688,7 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
                 VP.shift(mode.getCoefficients());
             }
             sample_from_polytope(VP, type, rng, randPoints, walkL, numpoints, gaussian, a, L, c,
-                                 StartingPoint, nburns, set_L, eta, walk, F, f, solver);
+                                 StartingPoint, nburns, set_L, eta, walk, F, f, h, solver);
             break;
         }
         case 3: {
@@ -674,7 +709,7 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
                 ZP.shift(mode.getCoefficients());
             }
             sample_from_polytope(ZP, type, rng, randPoints, walkL, numpoints, gaussian, a, L, c,
-                                 StartingPoint, nburns, set_L, eta, walk, F, f, solver);
+                                 StartingPoint, nburns, set_L, eta, walk, F, f, h, solver);
             break;
         }
         case 4: {
@@ -697,7 +732,7 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
                 VPcVP.shift(mode.getCoefficients());
             }
             sample_from_polytope(VPcVP, type, rng, randPoints, walkL, numpoints, gaussian, a, L, c,
-                                 StartingPoint, nburns, set_L, eta, walk, F, f, solver);
+                                 StartingPoint, nburns, set_L, eta, walk, F, f, h, solver);
             break;
         }
     }
