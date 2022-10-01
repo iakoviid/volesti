@@ -242,7 +242,7 @@ void sample_from_polytope(Polytope &P, int type, RNGType &rng, PointList &randPo
         CrhmcProblem,
         NegativeGradientFunctor
         >
-      >(randPoints, P, rng, walkL, numpoints, StartingPoint, nburns, *F, *f, *h, 4);
+      >(randPoints, P, rng, walkL, numpoints, nburns, *F, *f, *h, 4);
 
       break;
     case uld:
@@ -362,7 +362,7 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
 
     GaussianFunctor::GradientFunctor<Point> *G = NULL;
     GaussianFunctor::FunctionFunctor<Point> *g = NULL;
-    GaussianFunctor::HessianFunctor<Point> *hess_g =NULL;
+    GaussianFunctor::HessianFunctor<Point> *hess_g = NULL;
     bool functor_defined = true;
 
 
