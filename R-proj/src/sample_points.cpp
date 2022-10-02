@@ -262,7 +262,7 @@ void sample_from_polytope(Polytope &P, int type, RNGType &rng, PointList &randPo
         CrhmcProblem,
         NegativeGradientFunctor
         >
-      >(randPoints, P, rng, walkL, numpoints, nburns, *F, *f, &zerof, 4);
+      >(randPoints, P, rng, walkL, numpoints, nburns, *F, *f, zerof, 4);
       }
       break;
     case uld:
