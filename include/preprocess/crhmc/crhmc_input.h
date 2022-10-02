@@ -129,7 +129,7 @@ inline Input convert2crhmc_input(Polytope &P, Func &f, Grad &g, Hess &h) {
   int dimension = P.dimension();
   Input input = Input(dimension, f, g, h);
   if (std::is_same<
-      Hess, ZeroFunctor>::value){
+      Hess, ZeroFunctor<typename Input::point>>::value){
         input.ddfHandle=false;
   }
   input.Aineq = P.get_mat();
@@ -146,7 +146,7 @@ inline Input convert2crhmc_input(Polytope &P, Func &f, Grad &g, Hess &h) {
   int dimension = P.dimension();
   Input input = Input(dimension, f, g, h);
   if (std::is_same<
-      Hess, ZeroFunctor>::value){
+      Hess, ZeroFunctor<typename Input::point>>::value){
         input.ddfHandle=false;
   }
   std::tie(input.Aineq, input.bineq) = P.get_inequalities();
