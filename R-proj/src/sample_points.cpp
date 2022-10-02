@@ -215,8 +215,9 @@ void sample_from_polytope(Polytope &P, int type, RNGType &rng, PointList &randPo
       }
 
       break;
-    case crhmc:
+    case crhmc:{
       typedef  typename Polytope::MT MatrixType;
+      if(h!=NULL){
       typedef  crhmc_input
             <
                     MatrixType,
@@ -226,7 +227,6 @@ void sample_from_polytope(Polytope &P, int type, RNGType &rng, PointList &randPo
                     HessianFunctor
             > Input;
       typedef crhmc_problem<Point, Input> CrhmcProblem;
-      if(h!=NULL){
       crhmc_sampling <
         PointList,
         Polytope,
@@ -245,6 +245,15 @@ void sample_from_polytope(Polytope &P, int type, RNGType &rng, PointList &randPo
         >
       >(randPoints, P, rng, walkL, numpoints, nburns, *F, *f, *h, 4);
       }else{
+        typedef  crhmc_input
+              <
+                      MatrixType,
+                      Point,
+                      NegativeLogprobFunctor,
+                      NegativeGradientFunctor,
+                      ZeroFunctor<Point>
+              > Input;
+        typedef crhmc_problem<Point, Input> CrhmcProblem;
         ZeroFunctor<Point> zerof;
       crhmc_sampling <
         PointList,
@@ -265,6 +274,7 @@ void sample_from_polytope(Polytope &P, int type, RNGType &rng, PointList &randPo
       >(randPoints, P, rng, walkL, numpoints, nburns, *F, *f, zerof, 4);
       }
       break;
+      }
     case uld:
 
       logconcave_sampling <
