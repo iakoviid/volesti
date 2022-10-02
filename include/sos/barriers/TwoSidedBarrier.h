@@ -69,9 +69,9 @@ public:
 
     VT c = (ub + lb) / 2;
 
-    c(lowerIdx) = lb(lowerIdx) + VT::Ones(x2, 1) * 1e6;
-    c(upperIdx) = ub(upperIdx) - VT::Ones(x1, 1) * 1e6;
-    c(freeIdx) *= 0.0;
+    saxpy(c,lb,VT::Ones(x2, 1) * 1e6,lowerIdx,lowerIdx);
+    saxpy(c,ub,-VT::Ones(x1, 1) * 1e6,upperIdx,upperIdx);
+    set(c, freeIdx, 0.0);
 
     center = c;
   }

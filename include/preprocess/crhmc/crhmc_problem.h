@@ -131,7 +131,12 @@ public:
       SpMat S = SpMat(n, freeIndices.size());
       S.setFromTriplets(freeIndices.begin(), freeIndices.end());
       append_map(S, x);
-      barrier.set_bound(barrier.lb(indices), barrier.ub(indices));
+      copy_indicies(barrier.lb, barrier.lb, indices);
+      copy_indicies(barrier.ub, barrier.ub, indices);
+      barrier.lb.conservativeResize(indices.size());
+      barrier.ub.conservativeResize(indices.size());
+
+      barrier.set_bound(barrier.lb, barrier.ub);
       if (!isempty_center) {
         copy_indicies(center, center, indices);
         center.conservativeResize(indices.size());
