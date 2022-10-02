@@ -35,6 +35,7 @@ using Grad = GaussianFunctor::GradientFunctor<Point>;
 using Hess = GaussianFunctor::HessianFunctor<Point>;
 using PolytopeType = HPolytope<Point>;
 using MT = PolytopeType::MT;
+using VT = PolytopeType::VT;
 using func_params = GaussianFunctor::parameters<NT, Point>;
 using RNG = BoostRandomNumberGenerator<boost::mt19937, NT>;
 template <int simdLen>

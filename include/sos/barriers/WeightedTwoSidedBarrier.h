@@ -21,6 +21,7 @@
 
 #include "Eigen/Eigen"
 #include "cartesian_geom/cartesian_kernel.h"
+#include "preprocess/crhmc/crhmc_utils.h"
 #include <vector>
 
 template <class Point> class WeightedTwoSidedBarrier {
@@ -143,8 +144,10 @@ public:
     }
 
     VT c = (ub + lb) / 2;
-    saxpy(c,lb,VT::Ones(x2, 1) * 1e6,lowerIdx,lowerIdx);
-    saxpy(c,ub,-VT::Ones(x1, 1) * 1e6,upperIdx,upperIdx);
+    VT bias1=VT::Ones(x2, 1) * 1e6;
+    saxpy(c,lb,bias1,lowerIdx,lowerIdx);
+    VT bias2=-VT::Ones(x1, 1) * 1e6;
+    saxpy(c,ub,bias2,upperIdx,upperIdx);
     set(c, freeIdx, 0.0);
 
     center = c;

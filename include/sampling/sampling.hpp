@@ -317,7 +317,7 @@ void crhmc_sampling(PointList &randPoints,
                   NegativeGradientFunctor,
                   HessianFunctor
           > Input;
-  Input input = convert2crhmc_input<Input, NegativeLogprobFunctor, NegativeGradientFunctor, HessianFunctor>(P, f, F, h);
+  Input input = convert2crhmc_input<Input, Polytope, NegativeLogprobFunctor, NegativeGradientFunctor, HessianFunctor>(P, f, F, h);
   typedef crhmc_problem<Point, Input> CrhmcProblem;
   CrhmcProblem problem = CrhmcProblem(input);
 
