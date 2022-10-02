@@ -226,6 +226,7 @@ void sample_from_polytope(Polytope &P, int type, RNGType &rng, PointList &randPo
                     HessianFunctor
             > Input;
       typedef crhmc_problem<Point, Input> CrhmcProblem;
+      if(h!=NULL){
       crhmc_sampling <
         PointList,
         Polytope,
@@ -243,7 +244,26 @@ void sample_from_polytope(Polytope &P, int type, RNGType &rng, PointList &randPo
         NegativeGradientFunctor
         >
       >(randPoints, P, rng, walkL, numpoints, nburns, *F, *f, *h, 4);
-
+      }else{
+        ZeroFunctor<Point> zerof;
+      crhmc_sampling <
+        PointList,
+        Polytope,
+        RNGType,
+        CRHMCWalk,
+        NT,
+        Point,
+        NegativeGradientFunctor,
+        NegativeLogprobFunctor,
+        ZeroFunctor,
+        ImplicitMidpointODESolver <
+        Point,
+        NT,
+        CrhmcProblem,
+        NegativeGradientFunctor
+        >
+      >(randPoints, P, rng, walkL, numpoints, nburns, *F, *f, zerosf&, 4);
+      }
       break;
     case uld:
 
@@ -474,6 +494,8 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
             solver = leapfrog;
           } else if (solver_str == "euler") {
             solver = euler;
+          } else if (solver_str == "implicit_midpoint"){
+            solver = implicit_midpoint;
           } else {
             throw Rcpp::exception("Invalid ODE solver specified. Aborting.");
           }
@@ -511,6 +533,8 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
             solver = leapfrog;
           } else if (solver_str == "euler") {
             solver = euler;
+          } else if (solver_str == "implicit_midpoint"){
+            solver = implicit_midpoint;
           } else {
             throw Rcpp::exception("Invalid ODE solver specified. Aborting.");
           }
@@ -613,11 +637,13 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
         if (!logconcave) throw Rcpp::exception("ULD is not supported for non first-order sampling");
         walk = uld;
     } else if(Rcpp::as<std::string>(Rcpp::as<Rcpp::List>(random_walk)["walk"]).compare(std::string("CRHMC")) == 0){
-        if (!logconcave) throw Rcpp::exception("CRHMC is usef for logconcave sampling");
+        if (!logconcave) throw Rcpp::exception("CRHMC is used for logconcave sampling");
         if (type !=1) {
             throw Rcpp::exception("CRHMC sampling is supported only for H-polytopes");
         }
         walk =crhmc;
+        Rcpp::warning("Solver set to implicit midpoint.");
+        solver = implicit_midpoint;
     } else {
         throw Rcpp::exception("Unknown walk type!");
     }

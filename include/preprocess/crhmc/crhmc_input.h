@@ -128,6 +128,10 @@ template <
 inline Input convert2crhmc_input(Polytope &P, Func &f, Grad &g, Hess &h) {
   int dimension = P.dimension();
   Input input = Input(dimension, f, g, h);
+  if (std::is_same<
+      Hess, ZeroFunctor>::value){
+        input.ddfHandle=false;
+  }
   input.Aineq = P.get_mat();
   input.bineq = P.get_vec();
   return input;
@@ -141,6 +145,10 @@ template <typename Input, typename Polytope, typename Func, typename Grad, typen
 inline Input convert2crhmc_input(Polytope &P, Func &f, Grad &g, Hess &h) {
   int dimension = P.dimension();
   Input input = Input(dimension, f, g, h);
+  if (std::is_same<
+      Hess, ZeroFunctor>::value){
+        input.ddfHandle=false;
+  }
   std::tie(input.Aineq, input.bineq) = P.get_inequalities();
   std::tie(input.Aeq, input.beq) = P.get_equations();
   std::tie(input.lb, input.ub) = P.get_bounds();

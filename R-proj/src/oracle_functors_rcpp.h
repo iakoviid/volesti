@@ -17,7 +17,8 @@ enum ode_solvers {
   euler,
   runge_kutta,
   richardson,
-  collocation
+  collocation,
+  implicit_midpoint
 };
 
 // Holds Oracle Functor that wraps an R function via RCpp
