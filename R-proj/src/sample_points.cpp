@@ -262,7 +262,7 @@ void sample_from_polytope(Polytope &P, int type, RNGType &rng, PointList &randPo
         CrhmcProblem,
         NegativeGradientFunctor
         >
-      >(randPoints, P, rng, walkL, numpoints, nburns, *F, *f, zerosf&, 4);
+      >(randPoints, P, rng, walkL, numpoints, nburns, *F, *f, &zerof, 4);
       }
       break;
     case uld:
@@ -508,7 +508,10 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
         RcppFunctor::parameters<NT> rcpp_functor_params(L_, m, eta, 2);
         F = new RcppFunctor::GradientFunctor<Point>(rcpp_functor_params, negative_logprob_gradient);
         f = new RcppFunctor::FunctionFunctor<Point>(rcpp_functor_params, negative_logprob);
-
+        if(Rcpp::as<Rcpp::List>(distribution).containsElementNamed("negative_logprob_hessian")){
+          Rcpp::Function negative_logprob_hessian = Rcpp::as<Rcpp::List>(distribution)["negative_logprob_hessian"];
+          h = new RcppFunctor::HessianFunctor<Point>(rcpp_functor_params, negative_logprob_hessian);
+        }
     }
 
     else if (logconcave && !Rcpp::as<Rcpp::List>(distribution).containsElementNamed("negative_logprob") &&
@@ -547,6 +550,7 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
         GaussianFunctor::parameters<NT, Point> gaussian_functor_params(mode, a, eta);
         G = new GaussianFunctor::GradientFunctor<Point>(gaussian_functor_params);
         g = new GaussianFunctor::FunctionFunctor<Point>(gaussian_functor_params);
+        hess_g = new GaussianFunctor::HessianFunctor<Point>(gaussian_functor_params);
 
     }
 
