@@ -158,7 +158,7 @@ inline Input convert2crhmc_input(Polytope &P, Func &f, Grad &g, Hess &h) {
             << std::endl;
   exit(1);
   int dimension = 0;
-  Input input = Input(dimension);
+  Input input = Input(dimension, f, g, h);
   return input;
 }
 #endif
