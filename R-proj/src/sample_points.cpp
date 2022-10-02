@@ -255,7 +255,7 @@ void sample_from_polytope(Polytope &P, int type, RNGType &rng, PointList &randPo
         Point,
         NegativeGradientFunctor,
         NegativeLogprobFunctor,
-        ZeroFunctor,
+        ZeroFunctor<Point>,
         ImplicitMidpointODESolver <
         Point,
         NT,
