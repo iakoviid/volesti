@@ -216,6 +216,7 @@ void sample_from_polytope(Polytope &P, int type, RNGType &rng, PointList &randPo
 
       break;
     case crhmc:{
+      Rcpp::warning("papabless");
       typedef  typename Polytope::MT MatrixType;
       if(h!=NULL){
       typedef  crhmc_input
@@ -246,6 +247,7 @@ void sample_from_polytope(Polytope &P, int type, RNGType &rng, PointList &randPo
         >
       >(randPoints, P, rng, walkL, numpoints, nburns, *F, *f, *h, 4);
       }else{
+        Rcpp::warning("papablessikos");
         typedef  crhmc_input
               <
                       MatrixType,
