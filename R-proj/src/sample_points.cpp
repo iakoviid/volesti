@@ -246,6 +246,7 @@ void sample_from_polytope(Polytope &P, int type, RNGType &rng, PointList &randPo
         >
       >(randPoints, P, rng, walkL, numpoints, nburns, *F, *f, *h, 4);
       }else{
+        Rcpp::warning("bless");
         typedef  crhmc_input
               <
                       MatrixType,
@@ -715,6 +716,7 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
                     StartingPoint, nburns, set_L, eta, walk, F, f, h, solver);
             }
             else {
+                Rcpp::warning("Still here");
                 sample_from_polytope(HP, type, rng, randPoints, walkL, numpoints, gaussian, a, L, c,
                     StartingPoint, nburns, set_L, eta, walk, G, g, hess_g, solver);
             }

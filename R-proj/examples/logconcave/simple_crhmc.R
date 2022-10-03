@@ -56,6 +56,7 @@ cat("\n")
 cat("Sample variance is: ")
 sample_variance <- mean((pts - sample_mean)^2)
 cat(sample_variance)
+cat("\n")
 invisible(capture.output(dev.off()))
 
 # Negative log-probability hessian oracle
@@ -72,15 +73,16 @@ cat("\n")
 cat("Sample variance is: ")
 sample_variance <- mean((pts - sample_mean)^2)
 cat(sample_variance)
+cat("\n")
 invisible(capture.output(dev.off()))
 
-
+walk="CRHMC"
 b=c(10,10,10,10,10)
 A = matrix(c(1,0,-0.25,-1,2.5,1,0.4,-1,-0.9,0.5), nrow=5, ncol=2, byrow = TRUE)
 P <- volesti::Hpolytope$new(A, b)
 points <- sample_points(P, n = n_samples, random_walk = list("walk" = "CRHMC", "step_size" = 0.3, "nburns" = n_burns, "walk_length" = 1, "solver" = "implicit_midpoint"), distribution = list("density" = "gaussian", "variance" = 1/L))
 jpeg("scatter.jpg")
-plot(ggplot(data.frame( x=points [1,], y=points[2,] )) +
-geom point( aes(x=x, y=y, color=walk)) + coord fixed(xlim = c(−15,15),
-ylim = c(−15,15)) + ggtitle( sprintf (”Sampling a random pentagon with walk %s”, walk)))
+plot(ggplot(data.frame( x=points[1,], y=points[2,] )) +
+geom_point( aes(x=x, y=y, color=walk)) + coord_fixed(xlim = c(-15,15),
+ylim = c(-15,15)) + ggtitle(sprintf("Sampling a random pentagon with walk %s", walk)))
 invisible(capture.output(dev.off()))
