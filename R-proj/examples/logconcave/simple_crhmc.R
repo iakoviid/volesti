@@ -45,10 +45,10 @@ n_samples <- 20000
 n_burns <- n_samples / 2
 
 pts <- sample_points(P, n = n_samples, random_walk = list("walk" = "CRHMC", "step_size" = 0.3, "nburns" = n_burns, "walk_length" = 1, "solver" = "implicit_midpoint"), distribution = list("density" = "logconcave", "negative_logprob" = f, "negative_logprob_gradient" = grad_f, "L_" = L, "m" = m))
-
+jpeg("histogram.jpg", width = 350, height = "350")
 # Plot histogram
 hist(pts, probability=TRUE, breaks = 100)
-
+dev.off()
 cat("Sample mean is: ")
 sample_mean <- mean(pts)
 cat(sample_mean)
