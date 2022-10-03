@@ -656,7 +656,9 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
             throw Rcpp::exception("CRHMC sampling is supported only for H-polytopes");
         }
         walk =crhmc;
-        Rcpp::warning("Solver set to implicit midpoint.");
+        if(solver!=implicit_midpoint){
+          Rcpp::warning("Solver set to implicit midpoint.");
+        }
         solver = implicit_midpoint;
     } else {
         throw Rcpp::exception("Unknown walk type!");

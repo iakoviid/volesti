@@ -1,4 +1,4 @@
-QD_CPPFLAGS=$(CPPFLAGS) -I../../../ -I../../ \
+QD_CPPFLAGS=$(CPPFLAGS) -I../../include/qd -I../../include \
                   -I$(R_INCLUDE_DIR) \
                   -march=native\
 
