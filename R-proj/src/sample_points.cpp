@@ -216,7 +216,6 @@ void sample_from_polytope(Polytope &P, int type, RNGType &rng, PointList &randPo
 
       break;
     case crhmc:{
-      Rcpp::warning("papabless");
       typedef  typename Polytope::MT MatrixType;
       if(h!=NULL){
       typedef  crhmc_input
@@ -247,7 +246,6 @@ void sample_from_polytope(Polytope &P, int type, RNGType &rng, PointList &randPo
         >
       >(randPoints, P, rng, walkL, numpoints, nburns, *F, *f, *h, 4);
       }else{
-        Rcpp::warning("papablessikos");
         typedef  crhmc_input
               <
                       MatrixType,
@@ -655,7 +653,7 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
         if (!logconcave) throw Rcpp::exception("ULD is not supported for non first-order sampling");
         walk = uld;
     } else if(Rcpp::as<std::string>(Rcpp::as<Rcpp::List>(random_walk)["walk"]).compare(std::string("CRHMC")) == 0){
-        if (!logconcave) throw Rcpp::exception("CRHMC is used for logconcave sampling");
+        if (!logconcave && !gaussian) throw Rcpp::exception("CRHMC is used for logconcave sampling");
         if (type !=1) {
             throw Rcpp::exception("CRHMC sampling is supported only for H-polytopes");
         }

@@ -45,10 +45,10 @@ n_samples <- 20000
 n_burns <- n_samples / 2
 
 pts <- sample_points(P, n = n_samples, random_walk = list("walk" = "CRHMC", "step_size" = 0.3, "nburns" = n_burns, "walk_length" = 1, "solver" = "implicit_midpoint"), distribution = list("density" = "logconcave", "negative_logprob" = f, "negative_logprob_gradient" = grad_f, "L_" = L, "m" = m))
-jpeg("histogram.jpg", width = 350, height = "350")
+jpeg("histogram_without_hessian.jpg")
 # Plot histogram
 hist(pts, probability=TRUE, breaks = 100)
-dev.off()
+
 cat("Sample mean is: ")
 sample_mean <- mean(pts)
 cat(sample_mean)
@@ -56,3 +56,31 @@ cat("\n")
 cat("Sample variance is: ")
 sample_variance <- mean((pts - sample_mean)^2)
 cat(sample_variance)
+invisible(capture.output(dev.off()))
+
+# Negative log-probability hessian oracle
+hess_f <- function(x) (x*0 +2)
+pts <- sample_points(P, n = n_samples, random_walk = list("walk" = "CRHMC", "step_size" = 0.3, "nburns" = n_burns, "walk_length" = 1, "solver" = "implicit_midpoint"), distribution = list("density" = "logconcave", "negative_logprob" = f, "negative_logprob_gradient" = grad_f,"negative_logprob_hessian" = hess_f, "L_" = L, "m" = m))
+jpeg("histogram_with_hessian.jpg")
+# Plot histogram
+hist(pts, probability=TRUE, breaks = 100)
+
+cat("Sample mean is: ")
+sample_mean <- mean(pts)
+cat(sample_mean)
+cat("\n")
+cat("Sample variance is: ")
+sample_variance <- mean((pts - sample_mean)^2)
+cat(sample_variance)
+invisible(capture.output(dev.off()))
+
+
+b=c(10,10,10,10,10)
+A = matrix(c(1,0,-0.25,-1,2.5,1,0.4,-1,-0.9,0.5), nrow=5, ncol=2, byrow = TRUE)
+P <- volesti::Hpolytope$new(A, b)
+points <- sample_points(P, n = n_samples, random_walk = list("walk" = "CRHMC", "step_size" = 0.3, "nburns" = n_burns, "walk_length" = 1, "solver" = "implicit_midpoint"), distribution = list("density" = "gaussian", "variance" = 1/L))
+jpeg("scatter.jpg")
+plot(ggplot(data.frame( x=points [1,], y=points[2,] )) +
+geom point( aes(x=x, y=y, color=walk)) + coord fixed(xlim = c(−15,15),
+ylim = c(−15,15)) + ggtitle( sprintf (”Sampling a random pentagon with walk %s”, walk)))
+invisible(capture.output(dev.off()))
