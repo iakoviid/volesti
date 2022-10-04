@@ -691,7 +691,7 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
             throw Rcpp::exception("The number of points to burn before sampling has to be a positive integer!");
         }
     }
-
+    Rcpp::warning("Maybe here");
     switch(type) {
         case 1: {
             // Hpolytope

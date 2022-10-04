@@ -162,9 +162,7 @@ template <typename Input, typename Polytope, typename Func, typename Grad, typen
               !std::is_same<Polytope, HPolytope<typename Input::point>>::value>::
               type * = nullptr>
 inline Input convert2crhmc_input(Polytope &P, Func &f, Grad &g, Hess &h) {
-  std::cerr << "CRHMC does not handle Zonotopes and Vpolytopes yet"
-            << std::endl;
-  exit(1);
+  /*CRHMC works only for H-polytopes and constraint_problems for now*/
   int dimension = 0;
   Input input = Input(dimension, f, g, h);
   return input;
