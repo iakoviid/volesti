@@ -397,9 +397,9 @@ crhmc_sampling <
   NT,
   CrhmcProblem,
   NegativeGradientFunctor,
-  simdlen
+  simdLen
   >
->(randPoints, P, rng, walkL, numpoints, nburns, *F, *f, *h, 1);
+>(randPoints, P, rng, walkL, numpoints, nburns, *F, *f, *h, simdLen);
 }else{
   typedef  crhmc_input
         <
@@ -426,9 +426,9 @@ crhmc_sampling <
   NT,
   CrhmcProblem,
   NegativeGradientFunctor,
-  simdlen
+  simdLen
   >
->(randPoints, P, rng, walkL, numpoints, nburns, *F, *f, zerof, 1);
+>(randPoints, P, rng, walkL, numpoints, nburns, *F, *f, zerof, simdLen);
 }
 }
 template
