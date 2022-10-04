@@ -242,11 +242,10 @@ void sample_from_polytope(Polytope &P, int type, RNGType &rng, PointList &randPo
         NT,
         CrhmcProblem,
         NegativeGradientFunctor,
-        4
+        1
         >
-      >(randPoints, P, rng, walkL, numpoints, nburns, *F, *f, *h, 4);
+      >(randPoints, P, rng, walkL, numpoints, nburns, *F, *f, *h, 1);
       }else{
-        Rcpp::warning("bless");
         typedef  crhmc_input
               <
                       MatrixType,
@@ -272,9 +271,9 @@ void sample_from_polytope(Polytope &P, int type, RNGType &rng, PointList &randPo
         NT,
         CrhmcProblem,
         NegativeGradientFunctor,
-        4
+        1
         >
-      >(randPoints, P, rng, walkL, numpoints, nburns, *F, *f, zerof, 4);
+      >(randPoints, P, rng, walkL, numpoints, nburns, *F, *f, zerof, 1);
       }
       break;
       }
@@ -654,7 +653,7 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
         if (!logconcave) throw Rcpp::exception("ULD is not supported for non first-order sampling");
         walk = uld;
     } else if(Rcpp::as<std::string>(Rcpp::as<Rcpp::List>(random_walk)["walk"]).compare(std::string("CRHMC")) == 0){
-        if (!logconcave && !gaussian) throw Rcpp::exception("CRHMC is used for logconcave sampling");
+        if (!logconcave) throw Rcpp::exception("CRHMC is used for logconcave sampling");
         if (type !=1) {
             throw Rcpp::exception("CRHMC sampling is supported only for H-polytopes");
         }
@@ -691,7 +690,6 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
             throw Rcpp::exception("The number of points to burn before sampling has to be a positive integer!");
         }
     }
-    Rcpp::warning("Maybe here");
     switch(type) {
         case 1: {
             // Hpolytope
@@ -716,7 +714,6 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
                     StartingPoint, nburns, set_L, eta, walk, F, f, h, solver);
             }
             else {
-                Rcpp::warning("Still here");
                 sample_from_polytope(HP, type, rng, randPoints, walkL, numpoints, gaussian, a, L, c,
                     StartingPoint, nburns, set_L, eta, walk, G, g, hess_g, solver);
             }

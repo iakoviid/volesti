@@ -60,7 +60,7 @@ cat("\n")
 invisible(capture.output(dev.off()))
 
 # Negative log-probability hessian oracle
-hess_f <- function(x) (x*0 +2)
+hess_f <- function(x) (2)
 pts <- sample_points(P, n = n_samples, random_walk = list("walk" = "CRHMC", "step_size" = 0.3, "nburns" = n_burns, "walk_length" = 1, "solver" = "implicit_midpoint"), distribution = list("density" = "logconcave", "negative_logprob" = f, "negative_logprob_gradient" = grad_f,"negative_logprob_hessian" = hess_f, "L_" = L, "m" = m))
 jpeg("histogram_with_hessian.jpg")
 # Plot histogram
@@ -80,7 +80,7 @@ walk="CRHMC"
 b=c(10,10,10,10,10)
 A = matrix(c(1,0,-0.25,-1,2.5,1,0.4,-1,-0.9,0.5), nrow=5, ncol=2, byrow = TRUE)
 P <- volesti::Hpolytope$new(A, b)
-points <- sample_points(P, n = n_samples, random_walk = list("walk" = "CRHMC", "step_size" = 0.3, "nburns" = n_burns, "walk_length" = 1, "solver" = "implicit_midpoint"), distribution = list("density" = "gaussian", "variance" = 1/L))
+points <- sample_points(P, n = n_samples, random_walk = list("walk" = "CRHMC", "step_size" = 0.3, "nburns" = n_burns, "walk_length" = 1, "solver" = "implicit_midpoint"), distribution = list("density" = "logconcave", "variance" = 2))
 jpeg("scatter.jpg")
 plot(ggplot(data.frame( x=points[1,], y=points[2,] )) +
 geom_point( aes(x=x, y=y, color=walk)) + coord_fixed(xlim = c(-15,15),
