@@ -557,7 +557,8 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
           Rcpp::warning("Solver set to leapfrog.");
           solver = leapfrog;
         }
-
+        Rcpp::Rcout<<"a= "<<a<<"\n";
+        Rcpp::Rcout<<"mode= "<<mode<<"\n";      
         // Create functors
         GaussianFunctor::parameters<NT, Point> gaussian_functor_params(mode, a, eta);
         G = new GaussianFunctor::GradientFunctor<Point>(gaussian_functor_params);
