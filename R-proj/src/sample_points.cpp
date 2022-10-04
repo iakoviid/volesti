@@ -216,65 +216,7 @@ void sample_from_polytope(Polytope &P, int type, RNGType &rng, PointList &randPo
 
       break;
     case crhmc:{
-      typedef  typename Polytope::MT MatrixType;
-      if(h!=NULL){
-      typedef  crhmc_input
-            <
-                    MatrixType,
-                    Point,
-                    NegativeLogprobFunctor,
-                    NegativeGradientFunctor,
-                    HessianFunctor
-            > Input;
-      typedef crhmc_problem<Point, Input> CrhmcProblem;
-      crhmc_sampling <
-        PointList,
-        Polytope,
-        RNGType,
-        CRHMCWalk,
-        NT,
-        Point,
-        NegativeGradientFunctor,
-        NegativeLogprobFunctor,
-        HessianFunctor,
-        ImplicitMidpointODESolver <
-        Point,
-        NT,
-        CrhmcProblem,
-        NegativeGradientFunctor,
-        1
-        >
-      >(randPoints, P, rng, walkL, numpoints, nburns, *F, *f, *h, 1);
-      }else{
-        typedef  crhmc_input
-              <
-                      MatrixType,
-                      Point,
-                      NegativeLogprobFunctor,
-                      NegativeGradientFunctor,
-                      ZeroFunctor<Point>
-              > Input;
-        typedef crhmc_problem<Point, Input> CrhmcProblem;
-        ZeroFunctor<Point> zerof;
-      crhmc_sampling <
-        PointList,
-        Polytope,
-        RNGType,
-        CRHMCWalk,
-        NT,
-        Point,
-        NegativeGradientFunctor,
-        NegativeLogprobFunctor,
-        ZeroFunctor<Point>,
-        ImplicitMidpointODESolver <
-        Point,
-        NT,
-        CrhmcProblem,
-        NegativeGradientFunctor,
-        1
-        >
-      >(randPoints, P, rng, walkL, numpoints, nburns, *F, *f, zerof, 1);
-      }
+      execute_crhmc(P, rng, randPoints, walkL, numpoints, nburns, F, f, h);
       break;
       }
     case uld:
@@ -558,7 +500,7 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
           solver = leapfrog;
         }
         Rcpp::Rcout<<"a= "<<a<<"\n";
-        Rcpp::Rcout<<"mode= "<<mode<<"\n";      
+        Rcpp::Rcout<<"mode= "<<mode.getCoefficients()<<"\n";
         // Create functors
         GaussianFunctor::parameters<NT, Point> gaussian_functor_params(mode, a, eta);
         G = new GaussianFunctor::GradientFunctor<Point>(gaussian_functor_params);
