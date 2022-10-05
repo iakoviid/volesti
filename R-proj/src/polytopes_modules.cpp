@@ -64,7 +64,7 @@ using SpMat=Eigen::SparseMatrix<double> ;
 class sparse_constraint_problem {
 public:
     sparse_constraint_problem() {}
-    sparse_constraint_problem(SpMat _Aineq, Rcpp::NumericVector _bineq) : Aineq(_Aineq), bineq(_bineq), Aeq(Rcpp::NumericMatrix(0,_Aineq.cols())), beq(Rcpp::NumericVector(0)),
+    sparse_constraint_problem(SpMat _Aineq, Rcpp::NumericVector _bineq) : Aineq(_Aineq), bineq(_bineq), Aeq(SpMat(0,_Aineq.cols())), beq(Rcpp::NumericVector(0)),
                         lb(Rcpp::NumericVector(_Aineq.cols(),-1e9)), ub(Rcpp::NumericMatrix(_Aineq.cols(),1e9)), dimension(_Aineq.cols()), type(5) {}
     sparse_constraint_problem(SpMat _Aineq, Rcpp::NumericVector _bineq, SpMat _Aeq, Rcpp::NumericVector _beq) : Aineq(_Aineq), bineq(_bineq), Aeq(_Aeq), beq(_beq),
                         lb(Rcpp::NumericVector(_Aineq.cols(),-1e9)), ub(Rcpp::NumericMatrix(_Aineq.cols(),1e9)), dimension(_Aineq.cols()), type(5) {}
