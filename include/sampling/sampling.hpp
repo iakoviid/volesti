@@ -363,12 +363,13 @@ template <
         typename PointList,
         typename NegativeGradientFunctor,
         typename NegativeLogprobFunctor,
-        typename HessianFunctor
+        typename HessianFunctor,
+        int simdLen=1
 >
 void execute_crhmc(Polytope &P, RNGType &rng, PointList &randPoints,
                   unsigned int const& walkL, unsigned int const& numpoints,
                   unsigned int const& nburns, NegativeGradientFunctor *F=NULL,
-                  NegativeLogprobFunctor *f=NULL, HessianFunctor *h=NULL,const int simdLen=1){
+                  NegativeLogprobFunctor *f=NULL, HessianFunctor *h=NULL){
 typedef typename Polytope::MT MatrixType;
 typedef typename Polytope::PointType Point;
 typedef typename Point::FT NT;

@@ -216,7 +216,7 @@ void sample_from_polytope(Polytope &P, int type, RNGType &rng, PointList &randPo
 
       break;
     case crhmc:{
-      execute_crhmc(P, rng, randPoints, walkL, numpoints, nburns, F, f, h);
+      execute_crhmc<Polytope, RNGType, PointList, NegativeGradientFunctor,NegativeLogprobFunctor, HessianFunctor, 1>(P, rng, randPoints, walkL, numpoints, nburns, F, f, h);
       break;
       }
     case uld:
