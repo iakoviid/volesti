@@ -71,6 +71,8 @@ public:
     sparse_constraint_problem(SpMat _Aineq, Rcpp::NumericVector _bineq, SpMat _Aeq, Rcpp::NumericVector _beq,
                         Rcpp::NumericVector _lb, Rcpp::NumericVector _ub) : Aineq(_Aineq), bineq(_bineq), Aeq(_Aeq), beq(_beq),
                         lb(_lb), ub(_ub), dimension(_Aineq.cols()), type(5) {}
+    sparse_constraint_problem(Rcpp::NumericVector _lb, Rcpp::NumericVector _ub) : Aineq(SpMat(0, _lb.nrow())), bineq(Rcpp::NumericVector(0)), Aeq(SpMat(0, _lb.nrow())), beq(Rcpp::NumericVector(0)),
+                        lb(_lb), ub(_ub), dimension(_lb.cols()), type(5) {}
     SpMat Aineq;
     Rcpp::NumericVector bineq;
     SpMat Aeq;
@@ -135,7 +137,7 @@ RCPP_MODULE(polytopes){
     // expose the default constructor
     .constructor()
     .constructor<Rcpp::NumericMatrix>()
-    .constructor<Rcpp::NumericMatrix, double>()
+    .constructor<Rcpp::NumericMatrix, double>()lb(_lb), ub(_ub),
 
     .field( "V", &Vpolytope::V )
     .field( "volume", &Vpolytope::vol )
@@ -211,9 +213,15 @@ RCPP_MODULE(polytopes){
     //'
     //' @example
     //' # create a 2-d unit simplex
-    //' A = matrix(c(-1,0,0,-1,1,1), ncol=2, nrow=3, byrow=TRUE)
-    //' b = c(0,0,1)
-    //' P = Hpolytope$new(A,b)
+    //' Aineq = matrix(, nrow=0, ncol=2, byrow = TRUE)
+    //' Aineq = as( Aineq, 'dgCMatrix' )
+    //' bineq= matrix(,nrow=0, ncol=1, byrow=TRUE)
+    //' Aeq = matrix(c(1,1), ncol=2, nrow=1, byrow=TRUE)
+    //' Aeq = as( Aeq, 'dgCMatrix' )
+    //' beq = c(1)
+    //' lb = c(0,0)
+    //' ub = c(1,1)
+    //' P = sparse_constraint_problem$new(Aineq, bineq, Aeq, beq, lb, ub)
     //' @export
     class_<sparse_constraint_problem>("sparse_constraint_problem")
     // expose the default constructor
@@ -221,6 +229,7 @@ RCPP_MODULE(polytopes){
     .constructor<SpMat, Rcpp::NumericVector>()
     .constructor<SpMat, Rcpp::NumericVector, SpMat, Rcpp::NumericVector>()
     .constructor<SpMat, Rcpp::NumericVector, SpMat, Rcpp::NumericVector, Rcpp::NumericVector, Rcpp::NumericVector>()
+    .constructor<Rcpp::NumericVector, Rcpp::NumericVector>()
 
     .field( "Aineq", &sparse_constraint_problem::Aineq )
     .field( "bineq", &sparse_constraint_problem::bineq )

@@ -508,6 +508,13 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
         G = new GaussianFunctor::GradientFunctor<Point>(gaussian_functor_params);
         g = new GaussianFunctor::FunctionFunctor<Point>(gaussian_functor_params);
         hess_g = new GaussianFunctor::HessianFunctor<Point>(gaussian_functor_params);
+        Rcpp::Rcout<<"g= "<<"\n"<<(g*)(mode)<<"\n";
+        Rcpp::Rcout<<"G= "<<"\n"<<(G*)(mode).getCoefficients()<<"\n";
+        Rcpp::Rcout<<"hess_g= "<<"\n"<<(hess_g*)(mode).getCoefficients()<<"\n";
+
+        Rcpp::Rcout<<"g(1)= "<<"\n"<<(g*)(mode+Point(VT::Ones(dim)))<<"\n";
+        Rcpp::Rcout<<"G(1)= "<<"\n"<<(G*)(mode+Point(VT::Ones(dim))).getCoefficients()<<"\n";
+        Rcpp::Rcout<<"hess_g(1)= "<<"\n"<<(hess_g*)(mode+Point(VT::Ones(dim))).getCoefficients()<<"\n";
 
     }
 
