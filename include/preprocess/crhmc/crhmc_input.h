@@ -118,6 +118,37 @@ public:
     lb = -VT::Ones(dimension) * inf;
     ub = VT::Ones(dimension) * inf;
   }
+  void print(const char *fileName){
+    std::ofstream myfile;
+    myfile.open(fileName);
+    myfile << "-----"<<"dimension= "<<dimension<<"\n";
+    myfile << MT(Aineq);
+    myfile << "\n";
+    myfile << "\n";
+    myfile << MT(bineq);
+    myfile << "\n";
+    myfile << "\n";
+    myfile << MT(Aeq);
+    myfile << "\n";
+    myfile << "\n";
+    myfile << MT(beq);
+    myfile << "\n";
+    myfile << "\n";
+    myfile << MT(lb);
+    myfile << "\n";
+    myfile << "\n";
+    myfile << MT(ub);
+    myfile << "\n";
+    myfile << "\n";
+    myfile << f(Point(2*VT::Ones(dimension)));
+    myfile << "\n";
+    myfile << "\n";
+    myfile << df(Point(2*VT::Ones(dimension))).getCoefficients();
+    myfile << "\n";
+    myfile << "\n";
+    myfile << ddf(Point(2*VT::Ones(dimension))).getCoefficients();
+    myfile.close();
+  }
 };
 #include <type_traits>
 

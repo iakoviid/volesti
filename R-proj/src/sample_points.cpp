@@ -765,7 +765,7 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
            if(walk!=crhmc){throw Rcpp::exception("Sparse problems are supported only by the CRHMC walk.");}
            if (functor_defined) {
              Rcpp::Rcout<<"------------------------F-----------------"<<"\n";
-             execute_crhmc<sparse_problem, RNGType, std::list<Point>, RcppFunctor::GradientFunctor<Point>,RcppFunctor::FunctionFunctor<Point>, RcppFunctor::HessianFunctor<Point>, CRHMCWalk, 1>(problem, rng, randPoints, walkL, numpoints, nburns, F, f, h);
+             execute_crhmc<sparse_problem, RNGType, std::list<Point>, RcppFunctor::GradientFunctor<Point>,RcppFunctor::FunctionFunctor<Point>, RcppFunctor::HessianFunctor<Point>, CRHMCWalk, 4>(problem, rng, randPoints, walkL, numpoints, nburns, F, f, h);
            }
            else {
              Rcpp::Rcout<<"------------------------G-----------------"<<"\n";

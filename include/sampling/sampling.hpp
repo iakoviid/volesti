@@ -318,9 +318,18 @@ void crhmc_sampling(PointList &randPoints,
                   HessianFunctor
           > Input;
   Input input = convert2crhmc_input<Input, Polytope, NegativeLogprobFunctor, NegativeGradientFunctor, HessianFunctor>(P, f, F, h);
+  if(simdLen==4){
+    input.print("Input4.txt");
+  }else{
+    input.print("Input1.txt");
+  }
   typedef crhmc_problem<Point, Input> CrhmcProblem;
   CrhmcProblem problem = CrhmcProblem(input);
-  problem.print("problem.txt");
+  if(simdLen==4){
+    problem.print("chosen_one.txt");
+  }else{
+    problem.print("problem.txt");
+  }
   typedef typename WalkTypePolicy::template Walk
           <
                   Point,
