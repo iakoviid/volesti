@@ -597,8 +597,8 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
         walk = uld;
     } else if(Rcpp::as<std::string>(Rcpp::as<Rcpp::List>(random_walk)["walk"]).compare(std::string("CRHMC")) == 0){
         if (!logconcave) throw Rcpp::exception("CRHMC is used for logconcave sampling");
-        if (type !=1) {
-            throw Rcpp::exception("CRHMC sampling is supported only for H-polytopes");
+        if (type !=1 && type !=5 ) {
+            throw Rcpp::exception("CRHMC sampling is supported only for H-polytopes and Sparse Problems.");
         }
         walk =crhmc;
         if(solver!=implicit_midpoint){
