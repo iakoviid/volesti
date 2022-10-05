@@ -364,6 +364,7 @@ template <
         typename NegativeGradientFunctor,
         typename NegativeLogprobFunctor,
         typename HessianFunctor,
+        typename CRHMCWalk,
         int simdLen=1
 >
 void execute_crhmc(Polytope &P, RNGType &rng, PointList &randPoints,
