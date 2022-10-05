@@ -17,10 +17,10 @@ template <typename MatrixType, typename Point>
 class constraint_problem {
 public:
   using Type = typename Point::FT;
+  using PointType = Point;
   using VT = Eigen::Matrix<Type, Eigen::Dynamic, 1>;
   using MT = MatrixType;
 private:
-  using point = Point;
   unsigned int num_vars; // num_vars of the original problem
   MatrixType Aeq;         // Matrix of coefficients for the equality constraints
   VT beq;                 // Right hand side of the equality constraints
