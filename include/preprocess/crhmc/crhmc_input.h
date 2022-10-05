@@ -118,26 +118,27 @@ public:
     lb = -VT::Ones(dimension) * inf;
     ub = VT::Ones(dimension) * inf;
   }
+  using DMT = Eigen::Matrix<NT, Eigen::Dynamic, Eigen::Dynamic>;
   void print(const char *fileName){
     std::ofstream myfile;
     myfile.open(fileName);
     myfile << "-----"<<"dimension= "<<dimension<<"\n";
-    myfile << MT(Aineq);
+    myfile << DMT(Aineq);
     myfile << "\n";
     myfile << "\n";
-    myfile << MT(bineq);
+    myfile << DMT(bineq);
     myfile << "\n";
     myfile << "\n";
-    myfile << MT(Aeq);
+    myfile << DMT(Aeq);
     myfile << "\n";
     myfile << "\n";
-    myfile << MT(beq);
+    myfile << DMT(beq);
     myfile << "\n";
     myfile << "\n";
-    myfile << MT(lb);
+    myfile << DMT(lb);
     myfile << "\n";
     myfile << "\n";
-    myfile << MT(ub);
+    myfile << DMT(ub);
     myfile << "\n";
     myfile << "\n";
     myfile << f(Point(2*VT::Ones(dimension)));
