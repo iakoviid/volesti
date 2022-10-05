@@ -71,8 +71,8 @@ public:
     sparse_constraint_problem(SpMat _Aineq, Rcpp::NumericVector _bineq, SpMat _Aeq, Rcpp::NumericVector _beq,
                         Rcpp::NumericVector _lb, Rcpp::NumericVector _ub) : Aineq(_Aineq), bineq(_bineq), Aeq(_Aeq), beq(_beq),
                         lb(_lb), ub(_ub), dimension(_Aineq.cols()), type(5) {}
-    sparse_constraint_problem(Rcpp::NumericVector _lb, Rcpp::NumericVector _ub) : Aineq(SpMat(0, _lb.nrow())), bineq(Rcpp::NumericVector(0)), Aeq(SpMat(0, _lb.nrow())), beq(Rcpp::NumericVector(0)),
-                        lb(_lb), ub(_ub), dimension(_lb.cols()), type(5) {}
+    sparse_constraint_problem(Rcpp::NumericVector _lb, Rcpp::NumericVector _ub) : Aineq(SpMat(0, _lb.length())), bineq(Rcpp::NumericVector(0)), Aeq(SpMat(0, _lb.length())), beq(Rcpp::NumericVector(0)),
+                        lb(_lb), ub(_ub), dimension(_lb.length()), type(5) {}
     SpMat Aineq;
     Rcpp::NumericVector bineq;
     SpMat Aeq;
@@ -137,7 +137,7 @@ RCPP_MODULE(polytopes){
     // expose the default constructor
     .constructor()
     .constructor<Rcpp::NumericMatrix>()
-    .constructor<Rcpp::NumericMatrix, double>()lb(_lb), ub(_ub),
+    .constructor<Rcpp::NumericMatrix, double>()
 
     .field( "V", &Vpolytope::V )
     .field( "volume", &Vpolytope::vol )
