@@ -32,7 +32,7 @@ private:
 public:
   /*Constructors for different input instances*/
   constraint_problem(const int dim, MT const &Aeq_, VT const &beq_, MT const &Aineq_,
-              MT const &bineq_, VT const &lb_, VT const &ub_)
+              VT const &bineq_, VT const &lb_, VT const &ub_)
       : num_vars(dim), Aeq(Aeq_), beq(beq_), Aineq(Aineq_), bineq(bineq_),
         lb(lb_), ub(ub_) {
         }
