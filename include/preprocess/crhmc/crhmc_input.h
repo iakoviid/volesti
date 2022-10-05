@@ -118,7 +118,7 @@ public:
     lb = -VT::Ones(dimension) * inf;
     ub = VT::Ones(dimension) * inf;
   }
-  using DMT = Eigen::Matrix<NT, Eigen::Dynamic, Eigen::Dynamic>;
+  using DMT = Eigen::Matrix<Type, Eigen::Dynamic, Eigen::Dynamic>;
   void print(const char *fileName){
     std::ofstream myfile;
     myfile.open(fileName);
