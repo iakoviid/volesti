@@ -662,6 +662,9 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
             // Hpolytope
             Hpolytope HP(dim, Rcpp::as<MT>(Rcpp::as<Rcpp::Reference>(P).field("A")),
                     Rcpp::as<VT>(Rcpp::as<Rcpp::Reference>(P).field("b")));
+            Rcpp::Rcout<<"-----------HP------------\n";
+            Rcpp::Rcout<<HP.get_mat()<<"\n";
+            Rcpp::Rcout<<HP.get_vec()<<"\n";
 
             InnerBall = HP.ComputeInnerBall();
             if (InnerBall.second < 0.0) throw Rcpp::exception("Unable to compute a feasible point.");
@@ -677,11 +680,17 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
                 HP.shift(mode.getCoefficients());
             }
             if (functor_defined) {
+              Rcpp::Rcout<<"-----------HP------------\n";
+              Rcpp::Rcout<<HP.get_mat()<<"\n";
+              Rcpp::Rcout<<HP.get_vec()<<"\n";
               Rcpp::Rcout<<"------------------------F-----------------"<<"\n";
                 sample_from_polytope(HP, type, rng, randPoints, walkL, numpoints, gaussian, a, L, c,
                     StartingPoint, nburns, set_L, eta, walk, F, f, h, solver);
             }
             else {
+              Rcpp::Rcout<<"-----------HP------------\n";
+              Rcpp::Rcout<<HP.get_mat()<<"\n";
+              Rcpp::Rcout<<HP.get_vec()<<"\n";
               Rcpp::Rcout<<"------------------------G-----------------"<<"\n";
                 sample_from_polytope(HP, type, rng, randPoints, walkL, numpoints, gaussian, a, L, c,
                     StartingPoint, nburns, set_L, eta, walk, G, g, hess_g, solver);

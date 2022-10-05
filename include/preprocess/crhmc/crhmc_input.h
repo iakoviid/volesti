@@ -119,9 +119,8 @@ public:
     ub = VT::Ones(dimension) * inf;
   }
   using DMT = Eigen::Matrix<Type, Eigen::Dynamic, Eigen::Dynamic>;
-  void print(const char *fileName){
-    std::ofstream myfile;
-    myfile.open(fileName);
+  template <typename StreamType>
+  void print(StreamType& myfile){
     myfile << "-----"<<"dimension= "<<dimension<<"\n";
     myfile << DMT(Aineq);
     myfile << "\n";
@@ -148,7 +147,6 @@ public:
     myfile << "\n";
     myfile << "\n";
     myfile << ddf(Point(2*VT::Ones(dimension))).getCoefficients();
-    myfile.close();
   }
 };
 #include <type_traits>

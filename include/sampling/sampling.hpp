@@ -319,9 +319,13 @@ void crhmc_sampling(PointList &randPoints,
           > Input;
   Input input = convert2crhmc_input<Input, Polytope, NegativeLogprobFunctor, NegativeGradientFunctor, HessianFunctor>(P, f, F, h);
   if(simdLen==4){
-    input.print("Input4.txt");
+    std::ofstream stream;
+    stream.open("Input4.txt");
+    input.print(stream);
   }else{
-    input.print("Input1.txt");
+    std::ofstream stream;
+    stream.open("Input1.txt");
+    input.print(stream);
   }
   typedef crhmc_problem<Point, Input> CrhmcProblem;
   CrhmcProblem problem = CrhmcProblem(input);
