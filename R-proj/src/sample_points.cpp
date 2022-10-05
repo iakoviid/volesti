@@ -459,7 +459,7 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
           Rcpp::warning("Solver set to leapfrog.");
           solver = leapfrog;
         }
-
+        Rcpp::Rcout<<"---------------------------------------------"<<"\n";
         // Create functors
         RcppFunctor::parameters<NT> rcpp_functor_params(L_, m, eta, 2);
         F = new RcppFunctor::GradientFunctor<Point>(rcpp_functor_params, negative_logprob_gradient);
@@ -677,10 +677,12 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
                 HP.shift(mode.getCoefficients());
             }
             if (functor_defined) {
+              Rcpp::Rcout<<"------------------------F-----------------"<<"\n";
                 sample_from_polytope(HP, type, rng, randPoints, walkL, numpoints, gaussian, a, L, c,
                     StartingPoint, nburns, set_L, eta, walk, F, f, h, solver);
             }
             else {
+              Rcpp::Rcout<<"------------------------G-----------------"<<"\n";
                 sample_from_polytope(HP, type, rng, randPoints, walkL, numpoints, gaussian, a, L, c,
                     StartingPoint, nburns, set_L, eta, walk, G, g, hess_g, solver);
             }
@@ -762,9 +764,11 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
            sparse_problem problem(dim, Aeq, beq, Aineq, bineq, lb, ub);
            if(walk!=crhmc){throw Rcpp::exception("Sparse problems are supported only by the CRHMC walk.");}
            if (functor_defined) {
+             Rcpp::Rcout<<"------------------------F-----------------"<<"\n";
              execute_crhmc<sparse_problem, RNGType, std::list<Point>, RcppFunctor::GradientFunctor<Point>,RcppFunctor::FunctionFunctor<Point>, RcppFunctor::HessianFunctor<Point>, CRHMCWalk, 1>(problem, rng, randPoints, walkL, numpoints, nburns, F, f, h);
            }
            else {
+             Rcpp::Rcout<<"------------------------G-----------------"<<"\n";
              execute_crhmc<sparse_problem, RNGType, std::list<Point>, GaussianFunctor::GradientFunctor<Point>,GaussianFunctor::FunctionFunctor<Point>, GaussianFunctor::HessianFunctor<Point>, CRHMCWalk, 1>(problem, rng, randPoints, walkL, numpoints, nburns, G, g, hess_g);
            }
            break;
