@@ -23,7 +23,7 @@
 #include "sampling/sampling.hpp"
 #include "ode_solvers/ode_solvers.hpp"
 #include "oracle_functors_rcpp.h"
-
+#include "preprocess/crhmc/constraint_problem.h"
 enum random_walks {
   ball_walk,
   rdhr,
@@ -326,6 +326,8 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
     typedef IntersectionOfVpoly<Vpolytope, RNGType> InterVP;
     typedef Eigen::Matrix<NT,Eigen::Dynamic,1> VT;
     typedef Eigen::Matrix<NT,Eigen::Dynamic,Eigen::Dynamic> MT;
+    typedef Eigen::SparseMatrix<NT> SpMat;
+    typedef constraint_problem<SpMat,Point> sparse_problem;
 
     unsigned int type = Rcpp::as<Rcpp::Reference>(P).field("type"), dim = Rcpp::as<Rcpp::Reference>(P).field("dimension"),
           walkL = 1, numpoints, nburns = 0;
@@ -500,7 +502,7 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
           solver = leapfrog;
         }
         Rcpp::Rcout<<"a= "<<a<<"\n";
-        Rcpp::Rcout<<"mode= "<<mode.getCoefficients()<<"\n";
+        Rcpp::Rcout<<"mode= "<<"\n"<<mode.getCoefficients()<<"\n";
         // Create functors
         GaussianFunctor::parameters<NT, Point> gaussian_functor_params(mode, a, eta);
         G = new GaussianFunctor::GradientFunctor<Point>(gaussian_functor_params);
@@ -726,6 +728,24 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
             sample_from_polytope(VPcVP, type, rng, randPoints, walkL, numpoints, gaussian, a, L, c,
                                  StartingPoint, nburns, set_L, eta, walk, F, f, h, solver);
             break;
+        }
+        case 5: {
+          // Sparse constraint_problem
+          SpMat Aeq = Rcpp::as<SpMat>(Rcpp::as<Rcpp::Reference>(P).field("Aeq"));
+          VT beq=  Rcpp::as<VT>(Rcpp::as<Rcpp::Reference>(P).field("beq"));
+          SpMat Aineq = Rcpp::as<SpMat>(Rcpp::as<Rcpp::Reference>(P).field("Aineq"));
+          VT bineq= Rcpp::as<VT>(Rcpp::as<Rcpp::Reference>(P).field("bineq"));
+          VT lb=  Rcpp::as<VT>(Rcpp::as<Rcpp::Reference>(P).field("lb"));
+          VT ub=  Rcpp::as<VT>(Rcpp::as<Rcpp::Reference>(P).field("ub"));
+           sparse_problem problem(dim, Aeq, beq, Aineq, bineq, lb, ub);
+           if(walk!=crhmc){throw Rcpp::exception("Sparse problems are supported only by the CRHMC walk.");}
+           if (functor_defined) {
+             execute_crhmc<sparse_problem, RNGType, std::list<Point>, RcppFunctor::GradientFunctor<Point>,RcppFunctor::FunctionFunctor<Point>, RcppFunctor::HessianFunctor<Point>, CRHMCWalk, 1>(problem, rng, randPoints, walkL, numpoints, nburns, F, f, h);
+           }
+           else {
+             execute_crhmc<sparse_problem, RNGType, std::list<Point>, GaussianFunctor::GradientFunctor<Point>,GaussianFunctor::FunctionFunctor<Point>, GaussianFunctor::HessianFunctor<Point>, CRHMCWalk, 1>(problem, rng, randPoints, walkL, numpoints, nburns, G, g, hess_g);
+           }
+           break;
         }
     }
 
