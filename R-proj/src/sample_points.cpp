@@ -467,7 +467,18 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
         if(Rcpp::as<Rcpp::List>(distribution).containsElementNamed("negative_logprob_hessian")){
           Rcpp::Function negative_logprob_hessian = Rcpp::as<Rcpp::List>(distribution)["negative_logprob_hessian"];
           h = new RcppFunctor::HessianFunctor<Point>(rcpp_functor_params, negative_logprob_hessian);
+          GaussianFunctor::HessianFunctor<Point> testh = *h;
+          Rcpp::Rcout<<"hess_g= "<<"\n"<<testh(mode).getCoefficients()<<"\n";
+          Rcpp::Rcout<<"hess_g(1)= "<<"\n"<<testh(mode+Point(VT::Ones(dim))).getCoefficients()<<"\n";
         }
+        GaussianFunctor::GradientFunctor<Point> testG = *F;
+        GaussianFunctor::FunctionFunctor<Point> testg = *f;
+
+        Rcpp::Rcout<<"g= "<<"\n"<<testg(mode)<<"\n";
+        Rcpp::Rcout<<"G= "<<"\n"<<testG(mode).getCoefficients()<<"\n";
+
+        Rcpp::Rcout<<"g(1)= "<<"\n"<<testg(mode+Point(VT::Ones(dim)))<<"\n";
+        Rcpp::Rcout<<"G(1)= "<<"\n"<<testG(mode+Point(VT::Ones(dim))).getCoefficients()<<"\n";
     }
 
     else if (logconcave && !Rcpp::as<Rcpp::List>(distribution).containsElementNamed("negative_logprob") &&
