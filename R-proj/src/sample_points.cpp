@@ -695,6 +695,18 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
               Rcpp::Rcout<<HP.get_mat()<<"\n";
               Rcpp::Rcout<<HP.get_vec()<<"\n";
               Rcpp::Rcout<<"------------------------G-----------------"<<"\n";
+              GaussianFunctor::GradientFunctor<Point> testG = *G;
+              GaussianFunctor::FunctionFunctor<Point> testg = *g;
+              GaussianFunctor::HessianFunctor<Point> testh = *hess_g;
+
+              Rcpp::Rcout<<"g= "<<"\n"<<testg(mode)<<"\n";
+              Rcpp::Rcout<<"G= "<<"\n"<<testG(mode).getCoefficients()<<"\n";
+              Rcpp::Rcout<<"hess_g= "<<"\n"<<testh(mode).getCoefficients()<<"\n";
+
+              Rcpp::Rcout<<"g(1)= "<<"\n"<<testg(mode+Point(VT::Ones(dim)))<<"\n";
+              Rcpp::Rcout<<"G(1)= "<<"\n"<<testG(mode+Point(VT::Ones(dim))).getCoefficients()<<"\n";
+              Rcpp::Rcout<<"hess_g(1)= "<<"\n"<<testh(mode+Point(VT::Ones(dim))).getCoefficients()<<"\n";
+
                 sample_from_polytope(HP, type, rng, randPoints, walkL, numpoints, gaussian, a, L, c,
                     StartingPoint, nburns, set_L, eta, walk, G, g, hess_g, solver);
             }

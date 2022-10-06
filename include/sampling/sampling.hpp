@@ -390,7 +390,7 @@ typedef typename Polytope::PointType Point;
 typedef typename Point::FT NT;
 typedef typename Polytope::VT VT;
 if(f==NULL||F==NULL||h==NULL){
-  Rpp::Rcout<<"papabless\n";
+  Rcpp::Rcout<<"papabless\n";
 
 }
 NegativeGradientFunctor testG = *F;
