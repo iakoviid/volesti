@@ -387,6 +387,16 @@ void execute_crhmc(Polytope &P, RNGType &rng, PointList &randPoints,
 typedef typename Polytope::MT MatrixType;
 typedef typename Polytope::PointType Point;
 typedef typename Point::FT NT;
+if(f==NULL||G==NULL||h==NULL){
+  Rpp::Rcout<<"papabless\n";
+
+}
+NegativeGradientFunctor testG = *F;
+NegativeLogprobFunctor testg = *f;
+int dimension = P.dimension();
+Rcpp::Rcout<<"g= "<<"\n"<<testg(Point(2*VT::Ones(dimension)))<<"\n";
+Rcpp::Rcout<<"G= "<<"\n"<<testG(Point(2*VT::Ones(dimension))).getCoefficients()<<"\n";
+
 if(h!=NULL){
 typedef  crhmc_input
   <
