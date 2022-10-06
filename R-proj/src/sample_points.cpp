@@ -339,10 +339,6 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
     GaussianFunctor::GradientFunctor<Point> *G = NULL;
     GaussianFunctor::FunctionFunctor<Point> *g = NULL;
     GaussianFunctor::HessianFunctor<Point> *hess_g = NULL;
-    NT a = 0.5;
-    NT eta;
-    Point mode(dim);
-    GaussianFunctor::parameters<NT, Point> gaussian_functor_params(mode, a, eta);
     bool functor_defined = true;
 
 
@@ -361,8 +357,10 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
     random_walks walk;
     ode_solvers solver; // Used only for logconcave sampling
 
+    NT eta;
     std::list<Point> randPoints;
     std::pair<Point, NT> InnerBall;
+    Point mode(dim);
 
     numpoints = Rcpp::as<unsigned int>(n);
     if (numpoints <= 0) throw Rcpp::exception("The number of samples has to be a positive integer!");
@@ -397,6 +395,7 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
         }
     }
 
+    NT a = 0.5;
     if (Rcpp::as<Rcpp::List>(distribution).containsElementNamed("variance")) {
         a = 1.0 / (2.0 * Rcpp::as<NT>(Rcpp::as<Rcpp::List>(distribution)["variance"]));
         if (exponential) a = Rcpp::as<NT>(Rcpp::as<Rcpp::List>(distribution)["variance"]);
@@ -502,9 +501,10 @@ Rcpp::NumericMatrix sample_points(Rcpp::Nullable<Rcpp::Reference> P,
           solver = leapfrog;
         }
         // Create functors
-        G = new GaussianFunctor::GradientFunctor<Point>(gaussian_functor_params);
-        g = new GaussianFunctor::FunctionFunctor<Point>(gaussian_functor_params);
-        hess_g = new GaussianFunctor::HessianFunctor<Point>(gaussian_functor_params);
+        GaussianFunctor::parameters<NT, Point>* gaussian_functor_params=new GaussianFunctor::parameters<NT, Point>(mode, a, eta);
+        G = new GaussianFunctor::GradientFunctor<Point>(*gaussian_functor_params);
+        g = new GaussianFunctor::FunctionFunctor<Point>(*gaussian_functor_params);
+        hess_g = new GaussianFunctor::HessianFunctor<Point>(*gaussian_functor_params);
     }
 
     if (!random_walk.isNotNull() || !Rcpp::as<Rcpp::List>(random_walk).containsElementNamed("walk")) {
