@@ -200,7 +200,7 @@ RCPP_MODULE(polytopes){
     //' @description A constraint problem is defined by a set of linear inequalities and equalities or equivalently a \eqn{d}-dimensional constraint problem is defined by a \eqn{mineq\times d} matrix Aineq and a \eqn{mineq}-dimensional vector bineq, s.t.: \eqn{Aineqx\leq bineq}, a \eqn{meq\times d} matrix Aeq and a \eqn{meq}-dimensional vector beq, s.t.: \eqn{Aeqx\eq beq} and two \eqn{d} vectors lb, ub such that \eqn{lb\leq x \leq ub}.
     //'
     //' @field Aineq \eqn{mineq\times d} sparse matrix Aineq
-    //' @field bineq \eqn{mineq}-dimensional vector beq
+    //' @field bineq \eqn{mineq}-dimensional vector bineq
     //' @field Aeq \eqn{meq\times d} sparse matrix Aeq
     //' @field beq \eqn{meq}-dimensional vector beq
     //' @field lb \eqn{d}-dimensional vector lb
