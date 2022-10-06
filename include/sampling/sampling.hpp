@@ -370,6 +370,7 @@ void crhmc_sampling(PointList &randPoints,
                               push_back_policy, rng, F, f, params, crhmc_walk, simdLen);
 }
 #include "ode_solvers/ode_solvers.hpp"
+#include <Rcpp.h>
 template <
         typename Polytope,
         typename RNGType,
@@ -387,7 +388,8 @@ void execute_crhmc(Polytope &P, RNGType &rng, PointList &randPoints,
 typedef typename Polytope::MT MatrixType;
 typedef typename Polytope::PointType Point;
 typedef typename Point::FT NT;
-if(f==NULL||G==NULL||h==NULL){
+typedef typename Polytope::VT VT;
+if(f==NULL||F==NULL||h==NULL){
   Rpp::Rcout<<"papabless\n";
 
 }

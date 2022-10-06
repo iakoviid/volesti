@@ -197,8 +197,7 @@ RCPP_MODULE(polytopes){
 
     //' An exposed class to represent a sparse constraint problem
     //'
-    //' @description A constraint problem is defined by a set of linear inequalities and equalities or equivalently a \eqn{d}-dimensional constraint problem is defined by a \eqn{mineq\times d} matrix Aineq and a \eqn{mineq}-dimensional vector bineq, s.t.: \eqn{Aineqx\leq bineq},.
-    //' a \eqn{meq\times d} matrix Aeq and a \eqn{meq}-dimensional vector beq, s.t.: \eqn{Aeqx\eq beq} and two \eqn{d} vectors lb, ub such that \eqn{lb\leq x \leq ub}.
+    //' @description A constraint problem is defined by a set of linear inequalities and equalities or equivalently a \eqn{d}-dimensional constraint problem is defined by a \eqn{mineq\times d} matrix Aineq and a \eqn{mineq}-dimensional vector bineq, s.t.: \eqn{Aineqx\leq bineq}, a \eqn{meq\times d} matrix Aeq and a \eqn{meq}-dimensional vector beq, s.t.: \eqn{Aeqx\eq beq} and two \eqn{d} vectors lb, ub such that \eqn{lb\leq x \leq ub}.
     //'
     //' @field Aineq \eqn{mineq\times d} sparse matrix Aineq
     //' @field bineq \eqn{mineq}-dimensional vector beq

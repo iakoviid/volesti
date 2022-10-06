@@ -111,7 +111,7 @@ geom_point( aes(x=x, y=y, color=walk)) + coord_fixed(xlim = c(-15,15),
 ylim = c(-15,15)) + ggtitle(sprintf("Sampling a random pentagon with walk %s", walk)))
 invisible(capture.output(dev.off()))
 write.table(points, file="sparse.txt", row.names=FALSE, col.names=FALSE)
-quit("yes")
+
 walk="CRHMC"
 library(Matrix)
 bineq=matrix(c(10,10,10,10,10), nrow=5, ncol=1, byrow=TRUE)
@@ -130,6 +130,7 @@ geom_point( aes(x=x, y=y, color=walk)) + coord_fixed(xlim = c(-15,15),
 ylim = c(-15,15)) + ggtitle(sprintf("Sampling a random pentagon with walk %s", walk)))
 invisible(capture.output(dev.off()))
 write.table(points, file="sparse_gauss.txt", row.names=FALSE, col.names=FALSE)
+quit("yes")
 
 walk="CRHMC"
 lb=c(-1,-1)
